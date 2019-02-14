@@ -27,6 +27,7 @@ sudo apt-get install qt-sdk openjdk-9-jdk openjdk-9-jre
 sudo apt-get install phonon-backend-gstreamer
 sudo apt-get install phonon-backend-vlc
 sudo apt-get install libopenni-dev libopenni2-dev
+sudo apt install libproj-dev 
 
 # Compile and install PCL
 cmake -DCMAKE_BUILD_TYPE=None -DBUILD_GPU=ON -DBUILD_apps=ON -DBUILD_examples=ON ..
