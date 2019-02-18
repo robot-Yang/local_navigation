@@ -48,34 +48,34 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 	ec.setInputCloud(point_cloudPtr);
 	ec.extract(cluster_indices);
 
-  //迭代访问点云索引clusters，直到分割出所有聚类 
-	int i= 0;
-  
-	for (std::vector<pcl::PointIndices>::const_iterator it = clusters_indices.begin(); it != clusters_indices.end(); ++it)
-	{
-		pcl::PointCloud<pcl::PointXYZ>::Ptr cluster(new pcl::PointCloud<pcl::PointXYZ>);
 
-		//创建新的点云数据集cloud_cluster，将所有当前聚类写入到点云数据集中 
+  int i= 0;
+  for (std::vector<pcl::PointIndices>::const_iterator it = clusters_indices.begin(); it != clusters_indices.end(); ++it)
+  {
+	  pcl::PointCloud<pcl::PointXYZ>::Ptr cluster(new pcl::PointCloud<pcl::PointXYZ>);
 
-		for (std::vector<int>::const_iterator pit = it->indices.begin(); pit != it->indices.end(); ++pit)
+	  //创建新的点云数据集cloud_cluster，将所有当前聚类写入到点云数据集中 
 
-		cluster->points.push_back(cloud->points[*pit]);
-		cluster->width = cluster->points.size();
-		cluster->height = 1;
-		cluster->is_dense = true;
+	  for (std::vector<int>::const_iterator pit = it->indices.begin(); pit != it->indices.end(); ++pit)
 
-		//保存聚类结果
-		if (cluster->points.size() <= 0)
-			break;
+	  cluster->points.push_back(cloud->points[*pit]);
+	  cluster->width = cluster->points.size();
+	  cluster->height = 1;
+	  cluster->is_dense = true;
 
-		std::cout << "点云" << cluster->points.size() << "有这么多点" << std::endl;
-		std::stringstream ss;
-		ss << "索引" << j << ".pcd";
-		pcl::io::savePCDFile(ss.str(), *cluster);
-    
-		i++;
+	  //保存聚类结果
+	  if (cluster->points.size() <= 0)
+		  break;
 
-	}
+	  std::cout << "点云" << cluster->points.size() << "有这么多点" << std::endl;
+	  std::stringstream ss;
+	  ss << "索引" << j << ".pcd";
+	  pcl::io::savePCDFile(ss.str(), *cluster);
+
+
+	  i++;
+
+  }
   
   
   
