@@ -4,11 +4,11 @@
      #include <pcl/visualization/cloud_viewer.h>
 
      int
-     main ()
+     main (int argc, char **argv)
      {
              // load point cloud
              pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-             pcl::io::loadPCDFile ("table_scene_mug_stereo_textured.pcd", *cloud);
+             pcl::io::loadPCDFile (argv[1], *cloud);
 
              // estimate normals
              pcl::PointCloud<pcl::Normal>::Ptr normals (new pcl::PointCloud<pcl::Normal>);
