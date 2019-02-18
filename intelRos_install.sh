@@ -1,5 +1,7 @@
 mkdir -p ~/catkin_ws/src
 cd ~/catkin_ws/src/
+wget https://github.com/intel-ros/realsense/archive/2.2.0.tar.gz
+tar zxvf 2.2.0.tar.gz
 
 catkin_init_workspace 
 cd ..
