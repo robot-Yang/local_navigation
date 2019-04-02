@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="cluster_show_chair" type="cluster_show_chair" name="cluster_show_chair" />
+  <node pkg="region_growing_segmentation" type="region_growing_segmentation" name="chair_separate" />
+  <node pkg="centroid_bottom" type="centroid_bottom" name="centroid_bottom" output="screen"/>
+  <node pkg="centroid_back" type="centroid_back" name="centroid_back" output="screen"/>
+
+</launch>

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Link to 
+Type=Link
+URL=file:///home/chen/catkin_ws/src/ros_seg/src/downsampling.cpp
+Icon=text-x-c++src
