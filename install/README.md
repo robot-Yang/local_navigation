@@ -15,19 +15,19 @@ Commands in: realsense_install.sh
 http://wiki.ros.org/kinetic/Installation/Ubuntu  
 Commands in: ros_install.sh  
 *Before running the command, configure your Ubuntu repositories to allow "restricted," "universe," and "multiverse." and choose a better server: like tsukuba…
+*Pay attention to choosing a suitable mirror (related to the download speed)
 
-4.  Install Intel® RealSense™ ROS from Sources  
-https://github.com/intel-ros/realsense  
-Commands in: intelRos_install.sh  
-*Pay attention to choosing a suitable mirror(related to the download speed)
-
-5. PCL installation  
+4. PCL installation  
 (1). form binary package  
   sudo add-apt-repository ppa:v-launchpad-jochen-sprickerhof-de/pcl  
   sudo apt-get update  
   sudo apt-get install libpcl1  
 (2). from Source  
   Commands in: pcl_install.sh
+  
+5.  Install Intel® RealSense™ ROS from Sources  
+https://github.com/intel-ros/realsense  
+Commands in: intelRos_install.sh
 
 6. Install ROS in Raspberry Pi  
 https://github.com/ROSbots/rosbots_setup_tools#use-our-existing-rosbots-raspbianrosopencv-image-after-youve-downloaded-it
