@@ -19,14 +19,15 @@ All directionary could establish nodes to listen to the messages published by th
 Compile all codes (Commands in intelRos_install.sh or https://github.com/intel-ros/realsense)  
 
 Run 
-'''
+```
 roslaunch realsense2_camera demo_pointcloud.launch
-'''
-to get the original pointcloud and visualize it in rviz  
+```
+to get the original pointcloud and visualize it in rviz 
+
 Run 
-'''
+```
 roslaunch realsense2_camera dock_centroid.launch
-'''
+```
 to deal with pointcloud  
 
 Configuration of rviz is stored in rviz_config directionary as config1.rviz
