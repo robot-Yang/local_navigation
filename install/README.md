@@ -1,9 +1,9 @@
 # local_navigation
 
-1. Ubuntu installation && Install Ubuntu kernel 4.15.0 for UP from PPA
-https://wiki.up-community.org/Ubuntu
-Commands in: up2_change.sh
-*Do not upgrade to ubuntu 18
+1. Ubuntu installation && Install Ubuntu kernel 4.15.0 for UP from PPA  
+https://wiki.up-community.org/Ubuntu  
+Commands in: up2_change.sh  
+*Do not upgrade to ubuntu 18  
 *choose "NO" for the question: "abort kernal removal"
 
 2. Install Intel® RealSense™ SDK 2.0 from Debian Package
