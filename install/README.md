@@ -14,14 +14,16 @@ Commands in: realsense_install.sh
 3.  Install the ROS distribution  
 http://wiki.ros.org/kinetic/Installation/Ubuntu  
 Commands in: ros_install.sh  
-*Before running the command, configure your Ubuntu repositories to allow "restricted," "universe," and "multiverse." and choose a better server: like tsukuba…
+*Before running the command, configure your Ubuntu repositories to allow "restricted," "universe," and "multiverse." and choose a better server: like tsukuba…  
 *Pay attention to choosing a suitable mirror (related to the download speed)
 
 4. PCL installation  
 (1). form binary package  
+```
   sudo add-apt-repository ppa:v-launchpad-jochen-sprickerhof-de/pcl  
   sudo apt-get update  
   sudo apt-get install libpcl1  
+```
 (2). from Source  
   Commands in: pcl_install.sh
   
@@ -38,4 +40,4 @@ https://www.intorobotics.com/how-to-setup-ros-kinetic-to-communicate-between-ras
 
 Problems shot:  
 1. No rule to make target '/usr/lib/x86_64-linux-gnu/libvtkproj4-6.2.so.6.2.0'  
--> sudo apt-get install libvtk6-dev libvtk6.2 libvtk6.2-qt
+-> ```sudo apt-get install libvtk6-dev libvtk6.2 libvtk6.2-qt```
