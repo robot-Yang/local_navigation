@@ -26,5 +26,5 @@ https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/tree
 # enablel spi port on UP board  
 https://wiki.up-community.org/Pinout_UP2#SPI_Ports
 
-# enable spi in userspace  
-https://wiki.up-community.org/Pinout_UP2#SPI_Ports
+# Enable the HAT functionality from userspace  
+https://wiki.up-community.org/Ubuntu
