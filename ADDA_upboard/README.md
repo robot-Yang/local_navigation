@@ -14,5 +14,17 @@ use 'self._spi.open(1, 0)' to replace 'self._spi.open(0, 0)'
 3. line 21~ 31, line 108~ 124, line 203: 
 use the mraa responding output, input, pull_up fucntion to replace RPi.GPIO's
 
+# install pip  
+sudo apt install pip
+
+# install spidev  
+pip install spidev
+
+# add missing firmware from  
+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/tree/i915
+
+# enablel spi port on UP board  
+https://wiki.up-community.org/Pinout_UP2#SPI_Ports
+
 # enable spi in userspace  
 https://wiki.up-community.org/Pinout_UP2#SPI_Ports
