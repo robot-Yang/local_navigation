@@ -2,8 +2,10 @@
 
 import time
 import spidev
-import RPi.GPIO as GPIO
+import mraa
+
 from enum import IntEnum
+
 
 class AD_DA:
     class data_format(IntEnum):
@@ -12,16 +14,21 @@ class AD_DA:
         bits_16 = 2
     def __init__(self):
         self._spi = spidev.SpiDev()
-        self._spi.open(0, 0)
+        self._spi.open(1, 0)
         self._spi.mode = 0b01  # important
         self._spi.bits_per_word = 8
         self._spi.max_speed_hz = 30000
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setwarnings(False)
-        GPIO.setup(15, GPIO.OUT)  # CS AD
-        GPIO.setup(16, GPIO.OUT)  # CS DA
-        GPIO.setup(11, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # DRDY
-        GPIO.setup(12, GPIO.OUT)  # RST
+        #GPIO.setmode(GPIO.BOARD)
+        #GPIO.setwarnings(False)
+        self.gpio_1 = mraa.Gpio(15) #15 22
+        self.gpio_2 = mraa.Gpio(16) #16 23 
+        self.gpio_3 = mraa.Gpio(12) #12 18
+        self.gpio_4 = mraa.Gpio(11) #11 17
+        self.gpio_1.dir(mraa.DIR_OUT)
+        self.gpio_2.dir(mraa.DIR_OUT)
+        self.gpio_3.dir(mraa.DIR_OUT)
+        self.gpio_4.dir(mraa.DIR_IN) # DRDY
+        self.gpio_4.mode(mraa.MODE_HIZ) 
         self._RST_1()
         self._start_adc()
 
@@ -30,9 +37,9 @@ class AD_DA:
     def _start_adc(self):
         id = self._ReadChipID()
         if (id != 3):
-            print "Error, ASD1256 Chip ID =", id
+            print ("Error, ASD1256 Chip ID ="), id
         else:
-            print "Ok, ASD1256 Chip ID =", id
+            print ("Ok, ASD1256 Chip ID ="), id
         self._CfgADC(self._GAIN.GAIN_1, self._DRATE_E.SPS_100)  # drate 15
 
     class _GAIN(IntEnum):
@@ -99,22 +106,22 @@ class AD_DA:
         self._CS_ADC_1()
 
     def _CS_DAC_1(self):    #DAC
-        GPIO.output(16, GPIO.HIGH)
+        self.gpio_2.write(1)
 
     def _CS_DAC_0(self):
-        GPIO.output(16, GPIO.LOW)
+        self.gpio_2.write(0)
 
     def _CS_ADC_0(self):
-        GPIO.output(15, GPIO.LOW)
+        self.gpio_1.write(0)
 
     def _CS_ADC_1(self):
-        GPIO.output(15, GPIO.HIGH)
+        self.gpio_1.write(1)
 
     def _RST_0(self):
-        GPIO.output(12, GPIO.LOW)
+        self.gpio_3.write(0)
 
     def _RST_1(self):
-        GPIO.output(12, GPIO.HIGH)
+        self.gpio_3.write(1)
 
     def _WriteCmd(self,cmd):
         self._CS_ADC_0()
@@ -161,7 +168,7 @@ class AD_DA:
 
     def _SetChannel(self,ch):
         if (ch > 7):
-            print "Max channel up to 7"
+            print ("Max channel up to 7")
             return
         self._WriteReg(self._REG.MUX, (ch << 4) | (1 << 3))
         time.sleep(0.005)
@@ -177,7 +184,7 @@ class AD_DA:
             if format ==2: #16bits
                 Data = int(Data / 127)
             return Data
-        print "DRDY not available"
+        print ("DRDY not available")
         return 0
 
 
@@ -193,7 +200,7 @@ class AD_DA:
 
     def _WaitDRDY(self):
         for i in range(40000):
-            if (GPIO.input(11) == 0):
+            if (self.gpio_4.read() == 0):
                 return 0
             if (i >= 39999):
                 print("ADS1256_WaitDRDY() Time Out ...")
@@ -247,4 +254,4 @@ class AD_DA:
         self._spi.xfer([MSB])
         self._spi.xfer([LSB])
         self._CS_DAC_1()
-        time.sleep(0.001)
+time.sleep(0.001)
