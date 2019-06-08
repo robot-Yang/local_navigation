@@ -8,7 +8,6 @@ import time
 import HighPrecision_ADDA as converter
 import time
 import math
-import RPi.GPIO as GPIO
 
 
 
@@ -51,8 +50,6 @@ class chen:
         self.B = [0.0] * self.sequence
         self.threshold_1 = 0.05
         self.threshold_2 = 0.3
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setwarnings(False)
 
     def project(self, bottom_p_x, bottom_p_y, bottom_p_z, back_p_x, back_p_y, back_p_z):
         self.bottom_p_projected_x = ((self.tf_B**2 + self.tf_C**2) * bottom_p_x - self.tf_A * (self.tf_B * bottom_p_y + self.tf_C * bottom_p_z + self.tf_D)) / (self.tf_A**2 + self.tf_B**2 + self.tf_C**2)
