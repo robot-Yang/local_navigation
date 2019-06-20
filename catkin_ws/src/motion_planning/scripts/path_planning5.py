@@ -73,6 +73,9 @@ class chen:
         if self.bottom_p_projected_z == 0.0 and self.back_p_projected_z == 0.0:
             self.dest_X = 0.0
             self.dest_Z = 0.0
+        if self.bottom_p_projected_z == self.back_p_projected_z:
+            self.dest_X = self.bottom_p_projected_x
+            self.dest_Z = self.bottom_p_projected_z
         else:
             self.dest_X = self.bottom_p_projected_x + self.k * (self.bottom_p_projected_x - self.back_p_projected_x) / abs(self.bottom_p_projected_z - self.back_p_projected_z)
             self.dest_Z = self.bottom_p_projected_z + self.k * (self.bottom_p_projected_z - self.back_p_projected_z) / abs(self.bottom_p_projected_z - self.back_p_projected_z)
