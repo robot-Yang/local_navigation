@@ -76,7 +76,7 @@ class chen:
         else:
             self.dest_X = self.bottom_p_projected_x + self.k * (self.bottom_p_projected_x - self.back_p_projected_x) / abs(self.bottom_p_projected_z - self.back_p_projected_z)
             self.dest_Z = self.bottom_p_projected_z + self.k * (self.bottom_p_projected_z - self.back_p_projected_z) / abs(self.bottom_p_projected_z - self.back_p_projected_z)
-        self.dest_Distance = （self.dest_X**2 + self.dest_Z**2）** 0.5
+        self.dest_Distance = (self.dest_X**2 + self.dest_Z**2) ** 0.5
         print "destination", self.dest_X, self.dest_Z
 
     def AngleBeta(self):
