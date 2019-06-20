@@ -96,7 +96,7 @@ class chen:
             self.angle_1 = math.degrees(math.atan((self.back_p_projected_z - self.bottom_p_projected_z) / (
                         self.back_p_projected_x - self.bottom_p_projected_x)))
         if self.angle_1 < 0:
-            angle_1 = angle_1 + 180.0
+            self.angle_1 = self.angle_1 + 180.0
         self.beta =  self.angle_2 - self.angle_1
         print "beta", self.beta
 
