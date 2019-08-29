@@ -39,7 +39,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   sor.setLeafSize (0.02, 0.02, 0.02);
   sor.filter (cloud_filtered);
 
-    // conversion
+  // conversion
   pcl::PointCloud<pcl::PointXYZ> point_cloud;
   pcl::PointCloud<pcl::PointXYZ>::Ptr point_cloudPtr(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::fromPCLPointCloud2( cloud_filtered, point_cloud);
@@ -51,6 +51,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   pass.setFilterFieldName ("y");
   pass.setFilterLimits (-0.25, 0.3);
   pass.filter (*point_cloudPtr);
+  std::cout << "filter0." << std::endl;
 
   pcl::IndicesPtr indices1 (new std::vector <int>);
   pcl::PassThrough<pcl::PointXYZ> pass1;
@@ -58,20 +59,22 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   pass1.setFilterFieldName ("z");
   pass1.setFilterLimits (0.0, 2.0);
   pass1.filter (*point_cloudPtr);
+  std::cout << "filter1" << std::endl;
 
 
   // Creating the KdTree object for the search method of the extraction
-	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
-	tree->setInputCloud(point_cloudPtr);
+  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
+  tree->setInputCloud(point_cloudPtr);
 
-	std::vector<pcl::PointIndices> cluster_indices;
-	pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-	ec.setClusterTolerance(0.1); // 2cm
-	ec.setMinClusterSize(100); //100
-	ec.setMaxClusterSize(100000);
-	ec.setSearchMethod(tree);
-	ec.setInputCloud(point_cloudPtr);
-	ec.extract(cluster_indices);
+  std::vector<pcl::PointIndices> cluster_indices;
+  pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
+  ec.setClusterTolerance(0.1); // 2cm
+  ec.setMinClusterSize(100); //100
+  ec.setMaxClusterSize(100000);
+  ec.setSearchMethod(tree);
+  ec.setInputCloud(point_cloudPtr);
+  ec.extract(cluster_indices);
+  std::cout << "step3" << std::endl;
 
   //pcl::PointCloud<pcl::PointXYZ>::Ptr pointcloud_segmented(new pcl::PointCloud<pcl::PointXYZ>);
   
@@ -82,50 +85,57 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
   int i= 0;
   for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
   {
-	  pcl::PointCloud<pcl::PointXYZ>::Ptr cluster(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cluster(new pcl::PointCloud<pcl::PointXYZ>);
     
     float cluster_z = 0;
     float average_z = 0;
 
-	  for (std::vector<int>::const_iterator pit = it->indices.begin(); pit != it->indices.end(); ++pit)
+    for (std::vector<int>::const_iterator pit = it->indices.begin(); pit != it->indices.end(); ++pit)
     {
-	    cluster->points.push_back(point_cloudPtr->points[*pit]);
+      cluster->points.push_back(point_cloudPtr->points[*pit]);
       //cluster_z += point_cloudPtr->points[*pit].z;
     }
 
-	  cluster->width = cluster->points.size();
-	  cluster->height = 1;
-	  cluster->is_dense = true;
+    cluster->width = cluster->points.size();
+    cluster->height = 1;
+    cluster->is_dense = true;
 
-	  if (cluster->points.size() <= 0)
-		  break;
+    if (cluster->points.size() <= 0)
+      break;
 
     Eigen::Vector4f centroid0;//齐次表示 
     pcl::compute3DCentroid(*cluster, centroid0);
 
-	  //std::cout << "point cloud " << cluster->points.size() << " points" << std::endl;
-	  std::stringstream ss;
-	  ss << "index" << i << ".pcd";
-	  pcl::io::savePCDFile(ss.str(), *cluster);
+    //std::cout << "point cloud " << cluster->points.size() << " points" << std::endl;
+    std::stringstream ss;
+    ss << "index" << i << ".pcd";
+    pcl::io::savePCDFile(ss.str(), *cluster);
 
     std::cout << "compare_z: cluster" << i << centroid0[2] << std::endl;
     counter_average_z.push_back(centroid0[2]);
+
+    std::cout << "step4" << std::endl;
 
   i++;
 
   }
 
+  std::string varname = "index0.pcd";
+  if (counter_average_z.size() >= 1)
+  {
+    int position = 0;
+    std::vector<float>::iterator smallest;
 
-  int position = 0;
-  std::vector<float>::iterator smallest;
+    smallest = std::min_element(std::begin(counter_average_z), std::end(counter_average_z));
+    std::cout << "step5 smallest" << *smallest << std::endl;
 
+    position = std::distance(std::begin(counter_average_z), smallest);
+    std::cout << "smallest z" << *smallest << std::endl;
+    std::cout << "position " << position << std::endl;
+    std::string varname = "index" + std::to_string(position) + ".pcd";
+    //*pointcloud_chair = *SET_NAME[position]
+  }
 
-  smallest = std::min_element(std::begin(counter_average_z), std::end(counter_average_z));
-  position = std::distance(std::begin(counter_average_z), smallest);
-  std::cout << "smallest z" << *smallest << std::endl;
-  std::cout << "position " << position << std::endl;
-  std::string varname = "index" + std::to_string(position) + ".pcd";
-  //*pointcloud_chair = *SET_NAME[position]
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr pointcloud_chair(new pcl::PointCloud<pcl::PointXYZ>);
   if ( pcl::io::loadPCDFile <pcl::PointXYZ> (varname, *pointcloud_chair) == -1)
@@ -141,6 +151,8 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
   // Publish the data
   pub.publish (chair);
+  std::cout << "step6" << std::endl;
+
 
 } 
   
