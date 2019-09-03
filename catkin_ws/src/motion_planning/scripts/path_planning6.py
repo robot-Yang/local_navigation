@@ -86,6 +86,9 @@ class chen:
         if self.bottom_p_projected_z == 0.0 and self.back_p_projected_z == 0.0:
             self.dest_X = 0.0
             self.dest_Z = 0.0
+        if self.bottom_p_projected_z == self.back_p_projected_z:
+            self.dest_X = self.bottom_p_projected_x
+            self.dest_Z = self.bottom_p_projected_z
         else:
             self.dest_X = self.back_p_projected_x
             self.dest_Z = self.back_p_projected_z
@@ -193,7 +196,10 @@ class chen:
 
             while self.back_Distance > self.threshold_2:
                 # rotate value calculate
-                if self.back_Distance <= 1.10:
+                if self.back_Distance <= 0.95:
+                    self.linear_speed = 1800
+                    self.rotate_speed = 2500
+                elif self.back_Distance <= 1.10:
                     self.setDestination_close()
                     self.SpeedTOGo()
                     self.AngleAlpha()
@@ -216,10 +222,10 @@ class chen:
                 rospy.Subscriber('/centroid_back', PointCloud2, self.callback_pointcloud2)
                 self.project(self.bottom_p_x, self.bottom_p_y, self.bottom_p_z, self.back_p_x, self.back_p_y,
                              self.back_p_z)
+                self.setDestination()
 
                 # self.threshold_1 = #0.05
                 self.threshold_2 = 0.78 #0.3
-                self.setDestination()
 
                 rospy.sleep(0.1)
 
