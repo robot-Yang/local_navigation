@@ -28,3 +28,10 @@ https://wiki.up-community.org/Pinout_UP2#SPI_Ports
 
 # Enable the HAT functionality from userspace  
 https://wiki.up-community.org/Ubuntu
+
+# error shooting  
+1. if there is an error related to 'time out', remember to check if the time zone is right or not.  
+2. error: invalid GPIO or something, please check if you already replaced the kernel with the one provided by upboard.
+checking method: enter 'uname -a' into command line, if already replaced, the print out should be similar to 'Linux upsquared-UP-APL01 4.15.0-37-generic #40~upboard03-Ubuntu SMP Wed Dec 12 16:21:24 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux', '#40~upboard03-Ubuntu' means this kernel is from upboard.
+if not replace yet, please follow the tutorial here:
+https://wiki.up-community.org/Ubuntu
