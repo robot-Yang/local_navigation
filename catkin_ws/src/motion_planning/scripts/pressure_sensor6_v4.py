@@ -1,7 +1,4 @@
-#! /usr/bin/env python
-
-# import HighPrecision_ADDA as converter
-import path_planning5_1 as docking
+import HighPrecision_ADDA as converter
 import time
 import math
 from itertools import groupby
@@ -12,12 +9,7 @@ from scipy.signal import butter, lfilter, freqz
 # import matplotlib.pyplot as plt
 import heapq
 
-# print("start docking2--------------")
-DockC = docking.chen()
-# print("start docking0--------------")
-# conv = converter.AD_DA()
-# print("start docking1--------------")
-
+conv = converter.AD_DA()
 
 # coefficient for vmax and wmax(outout curve)
 forward_coefficient = 1
@@ -82,11 +74,11 @@ E1 = [original] * sequence
 # read data from ADDA board
 def read():
     global original
-    b = DockC.adda.ReadChannel(2, DockC.adda.data_format.voltage)
-    a = DockC.adda.ReadChannel(3, DockC.adda.data_format.voltage)
-    c = DockC.adda.ReadChannel(4, DockC.adda.data_format.voltage)
-    d = DockC.adda.ReadChannel(5, DockC.adda.data_format.voltage)
-    e = DockC.adda.ReadChannel(6, DockC.adda.data_format.voltage)
+    b = conv.ReadChannel(3, conv.data_format.voltage)
+    a = conv.ReadChannel(4, conv.data_format.voltage)
+    c = conv.ReadChannel(5, conv.data_format.voltage)
+    d = conv.ReadChannel(6, conv.data_format.voltage)
+    e = conv.ReadChannel(7, conv.data_format.voltage)
     a = float(a)
     b = float(b)
     c = float(c)
@@ -97,12 +89,11 @@ def read():
     c = round(c, 2)
     d = round(d, 2)
     e = round(e, 2)
-    print("a=", a, "b=", b, "c=", c, "d=", d, "e=", e)
-    # a = a - original + 2 # +1 because if without 1 a+b+c+d+e = 0 could happen!
-    # b = b - original + 2
-    # c = c - original + 2
-    # d = d - original + 2
-    # e = e - original + 2
+    a = a - original + 1 # +1 because if without 1 a+b+c+d+e = 0 could happen!
+    b = b - original + 1
+    c = c - original + 1
+    d = d - original + 1
+    e = e - original + 1
     return a,b,c,d,e
 
 # pre_calibration with default value
@@ -321,53 +312,53 @@ def output(a, b, c, d, e, ox):
 
 # execution command to DAC board based on the output curve
 def execution(a, b, c, d, e, ox):
-    treshold  = 200
+    treshold  = 20
     global pl2, pl1, pr1, pr2
     forward, backward, left_angle_for, left_angle_turn, right_angle_for, right_angle_turn, left_around, right_around = output(a, b, c, d, e, ox)
 
     if ox <= pr1 and ox >= pl1 and c >= treshold:
         # print("forward")
-        DockC.adda.SET_DAC0(forward, DockC.adda.data_format.voltage)
-        DockC.adda.SET_DAC1(2500, DockC.adda.data_format.voltage)
+        conv.SET_DAC0(forward, conv.data_format.voltage)
+        conv.SET_DAC1(2500, conv.data_format.voltage)
         print("forward", forward)
         # continue
     # turn an angle
     elif (ox <= pl1 and ox >= pl2 and e <= treshold):
         # print("angle")
-        DockC.adda.SET_DAC0(left_angle_for, DockC.adda.data_format.voltage)
-        DockC.adda.SET_DAC1(left_angle_turn, DockC.adda.data_format.voltage)
+        conv.SET_DAC0(left_angle_for, conv.data_format.voltage)
+        conv.SET_DAC1(left_angle_turn, conv.data_format.voltage)
         print("left_angle", left_angle_for, left_angle_turn)
         # continue
     elif (ox >= pr1 and ox <= pr2 and a <= treshold):
         # print("angle")
-        DockC.adda.SET_DAC0(right_angle_for, DockC.adda.data_format.voltage)
-        DockC.adda.SET_DAC1(right_angle_turn, DockC.adda.data_format.voltage)
+        conv.SET_DAC0(right_angle_for, conv.data_format.voltage)
+        conv.SET_DAC1(right_angle_turn, conv.data_format.voltage)
         print("right_angle", right_angle_for, right_angle_turn)
         # continue
     # turn around
     elif (ox <= pl2 and e <= treshold):
         # print("around")
-        DockC.adda.SET_DAC0(2500, DockC.adda.data_format.voltage)
-        DockC.adda.SET_DAC1(left_around, DockC.adda.data_format.voltage)
+        conv.SET_DAC0(2500, conv.data_format.voltage)
+        conv.SET_DAC1(left_around, conv.data_format.voltage)
         print("left_around", left_around)
         # continue
     elif (ox >= pr2 and a<=treshold):
         # print("around")
-        DockC.adda.SET_DAC0(2500, DockC.adda.data_format.voltage)
-        DockC.adda.SET_DAC1(right_around, DockC.adda.data_format.voltage)
+        conv.SET_DAC0(2500, conv.data_format.voltage)
+        conv.SET_DAC1(right_around, conv.data_format.voltage)
         print("rigtht_around", right_around)
     # backward
     elif a >= treshold and e >= treshold:
-        DockC.adda.SET_DAC0(backward, DockC.adda.data_format.voltage)
-        DockC.adda.SET_DAC1(2500, DockC.adda.data_format.voltage)
+        conv.SET_DAC0(backward, conv.data_format.voltage)
+        conv.SET_DAC1(2500, conv.data_format.voltage)
         print("backward", backward)
     else:
-        DockC.adda.SET_DAC0(2500, DockC.adda.data_format.voltage)
-        DockC.adda.SET_DAC1(2500, DockC.adda.data_format.voltage)
+        conv.SET_DAC0(2500, conv.data_format.voltage)
+        conv.SET_DAC1(2500, conv.data_format.voltage)
         print("stop")
 
 
-def Main():
+def main():
     global A1, B1, C1, D1, E1
     global r1, r2, r3, r4, r5
     global counter1
@@ -376,10 +367,9 @@ def Main():
     read_update(a, b, c, d, e)
     # print("a=",a, "b=",b,"c=",c,"d=",d, "e=",e, "ox=", ox)
 
-    # docking trigger # calibration
-    if b>=3000 and d>=3000 and c < 100:
-        print("start docking--------------")
-        DockC.main()
+    # calibration
+    # if b>=3000 and d>=3000:
+    #     calibration()
 
     # move_average filter execution
     a, b, c, d, e = move_average()
@@ -410,7 +400,7 @@ def Main():
 start = time.time()  # for calculate frequency
 try:
     while True:
-        Main()
+        main()
 except KeyboardInterrupt:
     pass
 end = time.time()  # for calculate frequency

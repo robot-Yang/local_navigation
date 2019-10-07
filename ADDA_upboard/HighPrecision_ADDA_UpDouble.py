@@ -10,7 +10,8 @@ class AD_DA:
         bits_16 = 2
     def __init__(self):
         self._spi = spidev.SpiDev()
-        self._spi.open(1, 0)
+        self._spi.open(1, 0) # for lower board
+        self._spi.open(1, 1) # for upper board
         self._spi.mode = 0b01  # important
         self._spi.bits_per_word = 8
         self._spi.max_speed_hz = 30000

@@ -170,7 +170,7 @@ class AD_DA:
         D = self._WaitDRDY()
         if D==0:
             Data = self._LoadChannel(ch)
-            if format ==0: #voltage
+            if format == 0: #voltage
                 Data = int(Data / 1677.72)
             if format ==1: # 8bits
                 Data = int(Data / 32767.5)

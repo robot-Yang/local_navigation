@@ -34,4 +34,5 @@ https://wiki.up-community.org/Ubuntu
 2. error: invalid GPIO or something, please check if you already replaced the kernel with the one provided by upboard.
 checking method: enter 'uname -a' into command line, if already replaced, the print out should be similar to 'Linux upsquared-UP-APL01 4.15.0-37-generic #40~upboard03-Ubuntu SMP Wed Dec 12 16:21:24 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux', '#40~upboard03-Ubuntu' means this kernel is from upboard.
 if not replace yet, please follow the tutorial here:
-https://wiki.up-community.org/Ubuntu
+https://wiki.up-community.org/Ubuntu  
+3. if the readings from sensor is very unstable(ex: 2888888) especially for the upper ADDA board, this is causded by the ADC pins are all exposed to the air.
