@@ -2,7 +2,7 @@
 # @Author: Yang Chen
 # @Date:   2019-10-10 22:40:46
 # @Last Modified by:   chenyang
-# @Last Modified time: 2019-10-14 17:20:21
+# @Last Modified time: 2019-10-21 00:33:10
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,6 +13,7 @@ x_center_traj, y_center_traj = [], []
 Rho = []
 Alpha = []
 Beta = []
+AlphaStar = []
 AlphaDot = [0]
 BetaDot = [0]
 
@@ -38,14 +39,14 @@ Kp_rho = 0.5 # depends on the real Qolo's speed
 K4 = 4.85
 # K = [5.6, 1.06]
 # K4 = 0.53
-K = [2, 30] 
+K = [2, 2.72] 
 # K = [4.36, 0.85]
 Kp_alpha = K[0] #15
 Kp_beta = K[1] #2   # 3 is better than 5 or 10 or 15
-dt = 0.05
+dt = 0.01
 chair_width = 0.5
 chair_length = 0.5
-safe_distance = 0.35 # distanc between destination and chair's front edge
+safe_distance = 0.45 # distanc between attractor and chair's front edge
 
 
 original = 0
@@ -53,9 +54,10 @@ sequence = 5
 A = [original] * sequence
 B = [original] * sequence
 
-show_animation = True
-ax = plt.gca()
-ax.set_aspect(1)
+# ax = plt.gca()
+# ax.set_aspect(1)
+
+fig = plt.figure(figsize=(6, 6))
 
 def chair_info(chair):
     x_goal = chair[0]
@@ -90,37 +92,70 @@ def move_average():
 
 def collectPlot():
     absFOV = [abs(i) for i in FOV]
+    absAlpha = [abs(i) for i in Alpha]
     max_index0 = absFOV.index(max(absFOV))
+    # max_index1 = absAlpha.index(max(absAlpha))
     X_fov = x_camera_traj[max_index0]
     Y_fov = y_camera_traj[max_index0]
-    # min_index1 = C_FOV.index(min(C_FOV))
-    # C_X_fov = x_camera_traj[min_index1]
-    # C_Y_fov = y_camera_traj[min_index1]
-    # max_index2 = L_FOV.index(max(L_FOV))
-    # L_X_fov = x_camera_traj[max_index2]
-    # L_Y_fov = y_camera_traj[max_index2]
-    # max_index3 = R_FOV.index(max(R_FOV))
-    # R_X_fov = x_camera_traj[max_index3]
-    # R_Y_fov = y_camera_traj[max_index3]
 
-    # plt.scatter(X_fov, Y_fov, s=50, c='r', marker="x")
-    plt.scatter(x_goal, y_goal, s=60, c='k', marker=".", zorder=30) # 
-    plt.scatter(x_start, y_start, s=60, c='k', marker=".", zorder=30)
-    plt.scatter(x_camera_traj[-1], y_camera_traj[-1], s=60, c='b', marker=".", zorder=30)
-    # plt.scatter(C_X_fov, C_Y_fov, s=50, c='r', marker="o")
-    # plt.scatter(L_X_fov, L_Y_fov, s=50, c='r', marker="x")
-    # plt.scatter(R_X_fov, R_Y_fov, s=50, c='b', marker="x")
+    # plt.scatter(x_goal, y_goal, s=60, c='k', marker=".", zorder=30) # 
+    # plt.scatter(x_start, y_start, s=60, c='k', marker=".", zorder=30)
+    # plt.scatter(x_camera_traj[-1], y_camera_traj[-1], s=60, c='b', marker=".", zorder=30)
+    # plt.scatter(x_center_traj[-1], y_center_traj[-1], s=60, c='b', marker=".", zorder=30)
 
-    print("Start Point BearingAngle =", absFOV[0] * 180 / np.pi)
-    print("max BearingAngle =", max(absFOV) * 180 / np.pi, "position =", X_fov, Y_fov)
-    # print("min C_FOV =", min(C_FOV) * 180 / np.pi, "position =", C_X_fov, C_Y_fov)
-    # print("max L_FOV =", max(L_FOV) * 180 / np.pi, "position =", L_X_fov, L_Y_fov)
-    # print("max R_FOV =", max(R_FOV) * 180 / np.pi, "position =", R_X_fov, R_Y_fov)
-    # print ("final_FOV_diff =", C_FOV[-1] * 180 / np.pi)
+    # print("Start Point BearingAngle =", absFOV[0] * 180 / np.pi)
+    # print("max BearingAngle =", max(absFOV) * 180 / np.pi, "position =", X_fov, Y_fov)
+    print("Start Point Alpha =", absAlpha[0])
+    print("max Alpha =", max(absAlpha))
+
+    # show velocity/aceelaration of linear and angular
+    timeSeries = np.linspace(0,len(FOV)*dt,len(FOV))
+    timeSeries0 = np.linspace(0,len(AlphaDot)*dt,len(AlphaDot))
+    # print(len(timeSeries), len(timeSeries0))
+    # plt.figure('FOV')
+    # plt.plot(timeSeries, FOV, 'r-')
+    # plt.ylim(0,min(FOV),max(FOV))
+    # plt.xlabel("time(s)")
+    # plt.ylabel("FOV")
+
+    # # plt.figure('V-Rho')
+    # # plt.subplot(2,1,1)
+    # degreeW = [i*180/np.pi for i in W]
+    # plt.plot(Rho, degreeW, 'b-')
+    # # plt.plot(Rho, V, 'r-')
+    # plt.xlabel("Rho")
+    # plt.ylabel("Angular Velocity(degree/s)")
+    # # plt.legend(labels = [startPoint[2]],loc='best')
+    # # plt.savefig("./Output_curve/V-Rho.png")
+
+
+    # plt.figure('V-Rho')
+    # plt.subplot(2,1,1)
+    # degreeW = [i*180/np.pi for i in W]
+    plt.figure('Alpha-Rho')
+    plt.plot(Rho, Alpha, 'b-')
+    plt.xlabel("Rho")
+    plt.ylabel("Alpha(degree)")
+    plt.figure('Beta-Rho')
+    plt.plot(Rho, Beta, 'r-')
+    plt.xlabel("Rho")
+    plt.ylabel("Beta(degree)")
+    plt.figure('AlphaStar-Rho')
+    plt.plot(Rho, AlphaStar, 'g-')
+    # plt.plot(Rho, V, 'r-')
+    plt.xlabel("Rho")
+    plt.ylabel("AlphaStar(degree)")
+    # plt.legend(labels = [startPoint[2]],loc='best')
+    # plt.savefig("./Output_curve/V-Rho.png")
 
 class chen():
     def __init__(self):
         # simulation parameters
+        self.alphaStar_bar = 0
+        self.Kp_rho = 0.5
+        self.Kp_alpha = 2
+        self.Kp_beta = 2.72
+
         self.v0 = 0
         self.w0 = 0
         self.v = 0
@@ -147,8 +182,8 @@ class chen():
         # print(self.dest_Y)
 
     def distance(self):
-        self.x_diff = self.dest_X - self.x_camera
-        self.y_diff = self.dest_Y - self.y_camera
+        self.x_diff = self.dest_X - self.x_center
+        self.y_diff = self.dest_Y - self.y_center
         self.c_x_diff = chair_bottom_x - self.x_camera
         self.c_y_diff = chair_bottom_y - self.y_camera
         # self.goal_x_diff = chair_bottom_x - self.dest_X
@@ -156,8 +191,10 @@ class chen():
         self.rho = np.sqrt(self.x_diff**2 + self.y_diff**2)
         Rho.append(self.rho)
         self.chair_bottom_rho = np.sqrt(self.c_x_diff**2 + self.c_y_diff**2)
+        # self.crossPoint_x_diff = 0 - self.x_center
+        # self.crossPoint_y_diff = self.cross_y - self.y_center
 
-    def trajPlot(self):
+    def trajCollect(self):
         x_camera_traj.append(self.x_camera)
         y_camera_traj.append(self.y_camera)
         x_center_traj.append(self.x_center)
@@ -168,13 +205,13 @@ class chen():
         self.alphaStar = np.arctan2(self.c_y_diff, self.c_x_diff) - self.theta
         self.beta = - np.arctan2(self.y_diff, self.x_diff) + theta_goal
         self.bearingAngle = np.arctan2(self.c_y_diff, self.c_x_diff) - self.theta
-        self.spiralBeta = theta_goal - np.arctan2(self.c_y_diff, self.c_x_diff)
-        self.hh = np.log((safe_distance + chair_length/2) / self.chair_bottom_rho)
-        self.spiralAngle = np.arctan(self.spiralBeta/self.hh)
         Alpha.append(self.alpha*180/np.pi)
         Beta.append(self.beta*180/np.pi)
+        AlphaStar.append(self.alphaStar*180/np.pi)
         # print(self.alpha)
         # print(self.beta)
+        self.alphaStar_bar = alpha_bar*np.pi/180 - abs(self.beta - (np.pi/2 - np.arctan2(self.c_y_diff, self.c_x_diff)))
+        # self.alphaStar_bar = np.arctan2(self.crossPoint_y_diff, self.crossPoint_x_diff) - self.theta
 
     def AngleDot(self):
         self.alphaDot = (Alpha[-1] - Alpha[-2]) / dt
@@ -183,10 +220,15 @@ class chen():
         BetaDot.append(self.betaDot)
 
     def SpeedToGo(self):
-        self.v =  Kp_rho * self.rho * np.cos(self.alpha)
-        self.w =  Kp_alpha * np.sin(self.alpha) * np.cos(self.alpha) - Kp_beta * self.beta * ((np.sin(alpha_bar*np.pi/180))**2 - np.sin(self.alpha)**2)
+        # self.v =  Kp_rho * self.rho * np.cos(self.alpha)
+        # self.w =  Kp_alpha * np.sin(self.alpha) * np.cos(self.alpha) - Kp_beta * self.beta * ((np.sin(alpha_bar*np.pi/180))**2 - np.sin(self.alpha)**2)
+        self.Kp_beta = (self.Kp_rho - self.Kp_alpha)**2 / (4*self.Kp_rho*np.sin(self.alphaStar_bar)**2)
+        self.v =  self.Kp_rho * self.rho * np.cos(self.alpha)
+        self.w =  self.Kp_alpha * np.sin(self.alpha) * np.cos(self.alpha) - self.Kp_beta * self.beta * ((np.sin(self.alphaStar_bar))**2 - np.sin(self.alpha)**2)
         if self.alpha > np.pi / 2 or self.alpha < -np.pi / 2:
             self.v = - self.v
+        # print(self.Kp_beta)
+        # print(self.alphaStar_bar*180/np.pi)
 
     def CurrentPosition(self):
         self.theta = self.theta + self.w * dt
@@ -194,6 +236,7 @@ class chen():
         self.y_center = self.y_center + self.v * np.sin(self.theta) * dt
         self.x_camera = self.x_center + self.deviation * np.cos(self.theta)
         self.y_camera = self.y_center + self.deviation * np.sin(self.theta)
+        # self.cross_y = (self.theta + alpha_bar*np.pi/180) * (0 - self.x_camera) + self.y_camera
 
     def PlotAll(self):
         # plt.arrow(x_start, y_start, 0.15*np.cos(theta_start),
@@ -237,31 +280,23 @@ class chen():
         R_FOV.append(abs(self.R_fov))
 
     def move_to_pose(self, x_start, y_start, theta_start, x_goal, y_goal, theta_goal, L_x_chair, L_y_chair, R_x_chair, R_y_chair, F_x_chair, F_y_chair):
-        """
-        rho is the distance between the robot and the goal position
-        alpha is the angle to the goal relative to the heading of the robot
-        beta is the angle between the robot's position and the goal position plus the goal angle
-
-        Kp_rho*rho and Kp_alpha*alpha drive the robot along a line towards the goal
-        Kp_beta*beta rotates the line so that it is parallel to the goal angle
-        """
         self.x_center = x_start
         self.y_center = y_start
         self.x_camera = x_start + self.deviation * np.cos(theta_start)
         self.y_camera = y_start + self.deviation * np.sin(theta_start)
         self.theta = theta_start
+        # self.cross_y = (self.theta + alpha_bar*np.pi/180) * (0 - self.x_camera) + self.y_camera
 
         self.setDestination()
         self.distance()
         self.Angle()
-        self.firstspiralAngle = self.spiralAngle
         self.collect(L_x_chair, L_y_chair, R_x_chair, R_y_chair)
-        self.trajPlot()
+        self.trajCollect()
 
         count = 0
 
-        # while (self.rho > 0.05 or abs(self.alpha-self.beta) > 0.05) and count < 100:
-        while (self.rho > 0.05) and count < 500:
+        while (self.rho > 0 or abs(self.alpha-self.beta) > 0) and count < 1000:
+        # while (self.rho > 0.05) and count < 500:
             count += 1
             # print("count =", count)
 
@@ -285,7 +320,7 @@ class chen():
             self.Angle()
             self.AngleDot()
             self.collect(L_x_chair, L_y_chair, R_x_chair, R_y_chair)
-            self.trajPlot()
+            self.trajCollect()
 
         if count >= 500:
             print("timeout")
@@ -293,7 +328,7 @@ class chen():
         # print ("x_traj, y_traj= ", x_traj, y_traj)
         collectPlot()
         # plt.show()
-        self.PlotAll()
+        # self.PlotAll()
 
     def plot_vehicle(self):  # pragma: no cover
         # Corners of triangular vehicle when pointing to the right (0 radians)
@@ -310,8 +345,8 @@ class chen():
         plt.plot([p2[0], p3[0]], [p2[1], p3[1]], 'k-')
         plt.plot([p3[0], p1[0]], [p3[1], p1[1]], 'k-')
 
-        plt.plot(x_camera_traj, y_camera_traj, 'b--')
-        # plt.plot(x_center_traj, y_center_traj, 'r--')  
+        # plt.plot(x_camera_traj, y_camera_traj, 'r--')
+        plt.plot(x_center_traj, y_center_traj, 'b--')  
 
         # plt.plot([self.x_camera,x_goal],[self.y_camera,y_goal], color ='gray', linewidth=1.5, linestyle="--")
         # plt.plot([self.x_camera, p1[0]],[self.y_camera, p1[1]], color ='gray', linewidth=1.5, linestyle="--")
@@ -323,8 +358,8 @@ class chen():
 
     def transformation_matrix(self):
         return np.array([
-            [np.cos(self.theta), -np.sin(self.theta), self.x_camera],
-            [np.sin(self.theta), np.cos(self.theta), self.y_camera],
+            [np.cos(self.theta), -np.sin(self.theta), self.x_center],
+            [np.sin(self.theta), np.cos(self.theta), self.y_center],
             [0, 0, 1]
         ])
 
@@ -366,18 +401,19 @@ for requiredDistance in np.linspace(requireMinDistance, requireMaxDistance, 5):
         startPoint_x = chair_bottom_x + requiredDistance * np.sin(requiredAngle * np.pi/180)
         startPoint_y = chair_bottom_y - requiredDistance * np.cos(requiredAngle * np.pi/180)
 
+        # startPoint_x = 0
+        # startPoint_y = chair_bottom_y - 2
         c_x_diff = chair_bottom_x - startPoint_x
         c_y_diff = chair_bottom_y - startPoint_y
-        feasiblePostureMin = np.arctan2(c_y_diff, c_x_diff) - alpha_bar * np.pi / 180
-        feasiblePostureMax = np.arctan2(c_y_diff, c_x_diff) + alpha_bar * np.pi / 180
-        # for feasiblePosture in np.arange(feasiblePostureMin, feasiblePostureMax, 1):
+        feasiblePostureMin = np.arctan2(c_y_diff, c_x_diff) - (10) * np.pi / 180
+        feasiblePostureMax = np.arctan2(c_y_diff, c_x_diff) + (10) * np.pi / 180
         for feasiblePosture in np.linspace(feasiblePostureMin, feasiblePostureMax, 3):
             startPoint = (startPoint_x, startPoint_y, feasiblePosture)
             StartPoint.append(startPoint)
 
 # print(StartPoint)
-StartPoint = [(-0.2, -1, np.pi*2/3), (-0.2, -1, np.pi/2), (-0.2, -1, np.pi/3), (0, -1, np.pi/2), (0.2, -1, np.pi*2/3), (0.2, -1, np.pi/2), (0.2, -1, np.pi/3)]
-# StartPoint = [(-2, -1, np.pi/3)]
+# StartPoint = [(-0.2, -1, np.pi*2/3), (-0.2, -1, np.pi/2), (-0.2, -1, np.pi/3), (0, -1, np.pi/2), (0.2, -1, np.pi*2/3), (0.2, -1, np.pi/2), (0.2, -1, np.pi/3)]
+# StartPoint = [(-0.2, -1, np.pi/3)]
 
 if __name__ == '__main__':
     for i in StartPoint:
@@ -391,6 +427,14 @@ if __name__ == '__main__':
         x_camera_traj, y_camera_traj = [], []
         x_center_traj, y_center_traj = [], []
         FOV = []
+        Rho = []
+        Alpha = []
+        Beta = []
+        AlphaStar = []
+        AlphaDot = [0]
+        BetaDot = [0]
+        V = [0]
+        W = [0]
         
 plt.show()
 
