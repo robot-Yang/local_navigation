@@ -147,10 +147,12 @@ class chen():
         self.y_diff = self.dest_Y - self.y
         self.rho = np.sqrt(self.x_diff**2 + self.y_diff**2)
 
+    # show the trajectory of qolo 
     def trajPlot(self):
         x_traj.append(self.x)
         y_traj.append(self.y)
 
+    # detecting the angle of alpha and beta
     def Angle(self):
         self.alpha = (np.arctan2(self.y_diff, self.x_diff) - self.theta + np.pi) % (2 * np.pi) - np.pi
         self.beta = (np.arctan2(self.y_diff, self.x_diff) - theta_goal + np.pi) % (2 * np.pi) - np.pi
@@ -235,14 +237,6 @@ class chen():
         R_FOV.append(abs(self.R_fov))
 
     def move_to_pose(self, x_start, y_start, theta_start, x_goal, y_goal, theta_goal, L_x_chair, L_y_chair, R_x_chair, R_y_chair, F_x_chair, F_y_chair):
-        """
-        rho is the distance between the robot and the goal position
-        alpha is the angle to the goal relative to the heading of the robot
-        beta is the angle between the robot's position and the goal position plus the goal angle
-
-        Kp_rho*rho and Kp_alpha*alpha drive the robot along a line towards the goal
-        Kp_beta*beta rotates the line so that it is parallel to the goal angle
-        """
         self.x = x_start
         self.y = y_start
         self.theta = theta_start
@@ -308,7 +302,7 @@ class chen():
         #plt.axis("equal")
         plt.xlim(-1, 3)
         plt.ylim(-1, 3)
-        # plt.pause(dt)
+        plt.pause(dt)
 
     def transformation_matrix(self):
         return np.array([
