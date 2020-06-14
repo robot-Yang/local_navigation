@@ -2,7 +2,7 @@
 # @Author: Yang Chen
 # @Date:   2019-10-10 22:40:46
 # @Last Modified by:   chenyang
-# @Last Modified time: 2020-05-26 23:31:08
+# @Last Modified time: 2020-05-26 23:34:00
 
 # simulate all possible initial states, for finding the constrains
 
@@ -39,7 +39,7 @@ chair_width = 0.5
 chair_length = 0.5
 safe_distance = 0.45 # distance between attractor and chair's front edge
 
-l = 0.1
+l = 0.2
 d = 0.7
 
 original = 0
@@ -233,9 +233,13 @@ class chen():
         BetaDot.append(self.betaDot)
 
     def SpeedToGo(self):
-        self.v =  Kp_rho * (self.rho) * np.cos(self.alpha)
-        self.w =  Kp_alpha * np.sin(self.alpha) * np.cos(self.alpha) - Kp_beta * self.beta * ((np.sin(alpha_bar*np.pi/180))**2 - np.sin(self.alphaStar)**2)
-        # self.w =  Kp_alpha * np.sin(self.alpha)
+        # self.v =  Kp_rho * (self.rho) * np.cos(self.alpha)
+        # self.w =  Kp_alpha * np.sin(self.alpha) * np.cos(self.alpha) - Kp_beta * self.beta * ((np.sin(alpha_bar*np.pi/180))**2 - np.sin(self.alphaStar)**2)
+        
+        # test
+        self.v =  Kp_rho * self.rho * np.cos(self.alpha)# * np.cos(self.alpha + self.beta) 
+        self.w =  3*Kp_rho  * np.sin(self.alpha)*np.cos(self.alpha) - Kp_rho * self.beta# + Kp_beta *  np.sin(self.alpha)*np.cos(self.alpha)*((np.sin(alpha_bar*np.pi/180))**2 - np.sin(self.alphaStar)**2)
+
         if self.alpha > np.pi / 2 or self.alpha < - np.pi / 2:
             self.v = - self.v
 
@@ -255,16 +259,18 @@ class chen():
         plt.arrow(x_goal, y_goal, 0.15*np.cos(theta_goal),
                   0.15*np.sin(theta_goal), color='g', width=0.03)
         plt.scatter(chair_bottom_x, chair_bottom_y, s=50, c='r', marker="x")
-        self.plot_vehicle_blue()
+        self.plot_vehicle()
+
+        # plt.tight_layout()
 
     def collectPlot(self):
-        # plt.figure('AlphaStar-Rho')
-        # plt.plot(Rho, AlphaStar, 'g-')
-        # # plt.xlabel("Rho")
-        # # plt.ylabel("AlphaStar(degree)")
-        # plt.xlim(-0.2, 2.7)
-        # plt.ylim(-60, 60)
-        # # plt.savefig("./Output_curve/V-Rho.png")
+        plt.figure('AlphaStar-Rho')
+        plt.plot(Rho, AlphaStar, 'g-')
+        # plt.xlabel("Rho")
+        # plt.ylabel("AlphaStar(degree)")
+        plt.xlim(-0.2, 2.7)
+        plt.ylim(-60, 60)
+        # plt.savefig("./Output_curve/V-Rho.png")
 
         # select the initial states whose AlphaStar is within alphaBar
         
@@ -281,39 +287,40 @@ class chen():
         # print (judge)
 
         if max(Abs_AlphaStar) < 40 and judge:
-            Left_StartPoint.append([x_start,y_start,theta_start]) 
-
-            # plt.figure('Left_AlphaStar-Rho')
-            # plt.plot(Rho, AlphaStar, 'g-')
-            # # plt.xlabel("Rho")
-            # # plt.ylabel("AlphaStar(degree)")
-            # plt.xlim(-0.2, 2.7)
-            # plt.ylim(-60, 60)
-
-            plt.figure('Separated_trajectory')
+            Left_StartPoint.append([x_start,y_start,theta_start])
+            plt.figure('Left_initialState')
+            # plt.figure('trajectory')
             ax = plt.gca()
             ax.set_aspect(1)
             plt.arrow(x_start, y_start, 0.15*np.cos(theta_start),
-                      0.15*np.sin(theta_start), color='b', width=0.03)
+                      0.15*np.sin(theta_start), color='r', width=0.03)
             plt.arrow(x_goal, y_goal, 0.15*np.cos(theta_goal),
                       0.15*np.sin(theta_goal), color='g', width=0.03)
             plt.scatter(chair_bottom_x, chair_bottom_y, s=50, c='r', marker="x")
             plt.scatter(x_goal, y_goal, s=60, c='k', marker=".", zorder=30) # 
             plt.scatter(x_start, y_start, s=60, c='k', marker=".", zorder=30)
             plt.xlim(-2, 2)
-            plt.ylim(-2.5, 1)  
-            self.plot_vehicle_blue()
+            plt.ylim(-2.5, 1)   
+
+            plt.figure('Left_AlphaStar-Rho')
+            plt.plot(Rho, AlphaStar, 'g-')
+            plt.xlabel("Rho")
+            plt.ylabel("AlphaStar(degree)")
+            plt.xlim(-0.2, 2.7)
+            plt.ylim(-60, 60)
+
+            plt.figure('Left_trajectory')
+            ax = plt.gca()
+            ax.set_aspect(1)
+            plt.arrow(x_start, y_start, 0.15*np.cos(theta_start),
+                      0.15*np.sin(theta_start), color='r', width=0.03)
+            plt.arrow(x_goal, y_goal, 0.15*np.cos(theta_goal),
+                      0.15*np.sin(theta_goal), color='g', width=0.03)
+            plt.scatter(chair_bottom_x, chair_bottom_y, s=50, c='r', marker="x")
+            self.plot_vehicle()
 
         else:
             Delete_StartPoint.append([x_start,y_start,theta_start])
-
-            # plt.figure('Separated_trajectory')
-            # ax = plt.gca()
-            # ax.set_aspect(1)
-            # plt.arrow(x_start, y_start, 0.15*np.cos(theta_start),
-            #           0.15*np.sin(theta_start), color='r', width=0.03)
-            # self.plot_vehicle_red()
-            
 
     def move_to_pose(self, x_start, y_start, theta_start, x_goal, y_goal, theta_goal, L_x_chair, L_y_chair, R_x_chair, R_y_chair, F_x_chair, F_y_chair):
         self.x_center = x_start
@@ -352,11 +359,10 @@ class chen():
         # if count >= 2000:
         #     print("timeout")
 
-
         self.collectPlot()
         # self.PlotAll()
 
-    def plot_vehicle_blue(self):  # pragma: no cover
+    def plot_vehicle(self):  # pragma: no cover
         # Corners of triangular vehicle when pointing to the right (0 radians)
         p1_i = np.array([0.15, 0, 1]).T
         p2_i = np.array([-0.15, 0.075, 1]).T
@@ -376,28 +382,6 @@ class chen():
 
         plt.xlim(-2, 2)
         plt.ylim(-2.5, 1)
-
-    def plot_vehicle_red(self):  # pragma: no cover
-        # Corners of triangular vehicle when pointing to the right (0 radians)
-        p1_i = np.array([0.15, 0, 1]).T
-        p2_i = np.array([-0.15, 0.075, 1]).T
-        p3_i = np.array([-0.15, -0.075, 1]).T
-
-        T = self.transformation_matrix()
-        p1 = np.matmul(T, p1_i)
-        p2 = np.matmul(T, p2_i)
-        p3 = np.matmul(T, p3_i)
-
-        # plt.plot([p1[0], p2[0]], [p1[1], p2[1]], 'k-')
-        # plt.plot([p2[0], p3[0]], [p2[1], p3[1]], 'k-')
-        # plt.plot([p3[0], p1[0]], [p3[1], p1[1]], 'k-')
-
-        # plt.plot(x_camera_traj, y_camera_traj, 'r--')
-        plt.plot(x_center_traj, y_center_traj, 'r--')  
-
-        plt.xlim(-2, 2)
-        plt.ylim(-2.5, 1)
-
 
     def transformation_matrix(self):
         return np.array([
@@ -448,8 +432,8 @@ Kp_beta = round((Kp_rho - Kp_alpha)**2 / (4 * Kp_rho * np.sin(alpha_bar*np.pi/18
 print(Kp_rho, Kp_alpha, Kp_beta)
 
 # generate all possiable initial states
-for requiredDistance in np.linspace(requireMinDistance, requireMaxDistance+1, 5):
-    for requiredAngle in np.linspace(requiredMinAngle, requiredMaxAngle, 5):
+for requiredDistance in np.linspace(requireMinDistance, requireMaxDistance+1, 3):
+    for requiredAngle in np.linspace(requiredMinAngle, requiredMaxAngle, 3):
         startPoint_x = chair_bottom_x + requiredDistance * np.sin(requiredAngle * np.pi/180)
         startPoint_y = chair_bottom_y - requiredDistance * np.cos(requiredAngle * np.pi/180)
 
@@ -457,7 +441,7 @@ for requiredDistance in np.linspace(requireMinDistance, requireMaxDistance+1, 5)
         c_y_diff = chair_bottom_y - startPoint_y
         feasiblePostureMin = np.arctan2(c_y_diff, c_x_diff) - (alpha_bar) * np.pi / 180
         feasiblePostureMax = np.arctan2(c_y_diff, c_x_diff) + (alpha_bar) * np.pi / 180
-        for feasiblePosture in np.linspace(feasiblePostureMin, feasiblePostureMax, 5):
+        for feasiblePosture in np.linspace(feasiblePostureMin, feasiblePostureMax, 3):
             startPoint = (startPoint_x, startPoint_y, feasiblePosture)
             StartPoint.append(startPoint)
 # print ('All_StartPoint =', StartPoint)
@@ -489,10 +473,8 @@ plt.xticks(fontsize=16)
 plt.yticks(fontsize=16) 
 plt.xlabel(r'$x$''(meter)', fontsize=16)
 plt.ylabel(r'$y$''(meter)', fontsize=16)
-# plt.xlabel(r'$\rho$''(meter)', fontsize=16)
-# plt.ylabel(r'$\alpha^*$''(degre)', fontsize=16)
+# plt.axis('equal')
 plt.tight_layout()
-
 plt.show()
 
 

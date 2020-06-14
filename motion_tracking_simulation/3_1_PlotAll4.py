@@ -2,13 +2,18 @@
 # @Author: Yang Chen
 # @Date:   2019-10-10 22:40:46
 # @Last Modified by:   chenyang
-# @Last Modified time: 2020-05-26 23:31:08
+# @Last Modified time: 2020-06-14 22:10:48
 
-# simulate all possible initial states, for finding the constrains
+'''
+Simulate all possible initial states, give constraint of a* and convergence, find the feasible space, save data into csv
+For fitting the boundary
+'''
 
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from random import random
+import csv
 
 x_camera_traj, y_camera_traj = [], []
 x_center_traj, y_center_traj = [], []
@@ -34,13 +39,13 @@ a_v_threshold = 5
 a_w_threshold = 4
 
 
-dt = 0.01
+dt = 0.1
 chair_width = 0.5
 chair_length = 0.5
 safe_distance = 0.45 # distance between attractor and chair's front edge
 
-l = 0.1
-d = 0.7
+l = 0.1 # distance between camera and center of Qolo
+d = 0.7 # distance between attractor (destination) and objective (center of chair)
 
 original = 0
 sequence = 5
@@ -56,11 +61,28 @@ v_r_min = -5.44
 v_r_max = 5.44
 
 Left_initialState = []
+Left_StartPoint = []
+Delete_StartPoint = []
+
 Left_initialX = []
 Left_initialY = []
 Left_initialPosture = []
-Left_StartPoint = []
-Delete_StartPoint = []
+Left_initialRho = []
+Left_initialAlpha = []
+Left_initialPhi = []
+Left_maxAlphaStar = []
+Left_Stable_flag = []
+
+Delete_initialX = []
+Delete_initialY = []
+Delete_initialPosture = []
+Delete_initialRho = []
+Delete_initialAlpha = []
+Delete_initialPhi = []
+Delete_maxAlphaStar = []
+Delete_Stable_flag = []
+
+judge = 0
 
 def chair_info(chair):
     x_goal = chair[0]
@@ -151,8 +173,78 @@ def Deleted_rhoAlphaBeta_Output():
     print('----------------')
     print('Delete_Beta = ', Delete_Beta)
 
+def plotPoints():
+    #  plot in (x, y, theta) 2D space
+    plt.figure('Left_initialState-2D')
+    ax = plt.gca()
+    ax.set_aspect(1)
+    plt.quiver(Left_initialX, Left_initialY, np.cos(Left_initialPosture), np.sin(Left_initialPosture), scale =20)
+    plt.arrow(x_goal, y_goal, 0.15*np.cos(theta_goal),
+              0.15*np.sin(theta_goal), color='g', width=0.03)
+    plt.scatter(chair_bottom_x, chair_bottom_y, s=50, c='r', marker="x")
+    plt.scatter(x_goal, y_goal, s=60, c='k', marker=".", zorder=30) # 
+    plt.scatter(Left_initialX, Left_initialY, s=60, c='k', marker=".", zorder=30)
+    plt.xlim(-2, 2)
+    plt.ylim(-2.5, 1)
 
-class chen():
+    #  plot in (rho, alpha, phi) 3D space
+    fig = plt.figure('Left_initialState-3D')
+    ax = Axes3D(fig)
+    ax.scatter(Left_initialRho, Left_initialAlpha, Left_initialPhi, c='k', marker=".")
+    ax.set_xlabel('rho')
+    ax.set_ylabel('alpha')
+    ax.set_zlabel('phi')
+    ax.tick_params(axis='both', which='major', labelsize=10)
+    ax.tick_params(axis='both', which='minor', labelsize=10)
+
+def collectPoints():
+    Abs_AlphaStar = [abs(i) for i in AlphaStar]
+    global judge
+    judge = (a.rho < 0.01 and abs(a.alpha-a.beta) < 0.01)
+    if max(Abs_AlphaStar) < 40 and judge:
+        # Left_initialX.append(x_start)
+        # Left_initialY.append(y_start)
+        # Left_initialPosture.append(theta_start)
+        Left_initialRho.append(Rhoo[pointLocation])
+        Left_initialAlpha.append(Alphaa[pointLocation])
+        Left_initialPhi.append(Phii[pointLocation])
+        Left_maxAlphaStar.append(max(Abs_AlphaStar))
+        Left_Stable_flag.append(1)
+    else:
+        # Delete_initialX.append(x_start)
+        # Delete_initialY.append(y_start)
+        # Delete_initialPosture.append(theta_start)
+        Delete_initialRho.append(Rhoo[pointLocation])
+        Delete_initialAlpha.append(Alphaa[pointLocation])
+        Delete_initialPhi.append(Phii[pointLocation])
+        Delete_maxAlphaStar.append(max(Abs_AlphaStar))
+        Delete_Stable_flag.append (0)
+
+def writeIntocsv():
+    # saved format: [rho alpha phi alpha* Stable_flag]
+    Left_all = [Left_initialRho,Left_initialAlpha,Left_initialPhi,Left_maxAlphaStar,Left_Stable_flag]
+    Left_all = np.transpose(Left_all)
+    # np.savetxt("simulation_result.csv", Left_all, delimiter=",")
+    Delete_all = [Delete_initialRho, Delete_initialAlpha, Delete_initialPhi, Delete_maxAlphaStar, Delete_Stable_flag]
+    Delete_all = np.transpose(Delete_all)
+    np.savetxt("simulation_result_0.csv", np.r_[Left_all,Delete_all], delimiter=",")
+
+    # saved format: 
+    with open('simulation_result_1.csv', 'w') as csvFile:
+        writer = csv.writer(csvFile)
+        writer.writerow(Left_initialRho)
+        writer.writerow(Left_initialAlpha)
+        writer.writerow(Left_initialPhi)
+        writer.writerow(Left_maxAlphaStar)
+        writer.writerow(Left_Stable_flag)
+        writer.writerow(Delete_initialRho)
+        writer.writerow(Delete_initialAlpha)
+        writer.writerow(Delete_initialPhi)
+        writer.writerow(Delete_maxAlphaStar)
+        writer.writerow(Delete_Stable_flag)
+    csvFile.close()
+
+class DockingSim():
     def __init__(self):
         # simulation parameters
         self.v0 = 0
@@ -198,15 +290,8 @@ class chen():
         y_center_traj.append(self.y_center)
 
     def Angle(self):
-        self.alpha = (np.arctan2(self.y_diff, self.x_diff) - self.theta + np.pi) % (2 * np.pi) - np.pi
-        self.beta = (- np.arctan2(self.y_diff, self.x_diff) + theta_goal + np.pi) % (2 * np.pi) - np.pi
-
-        # OB = self.rho * np.sin(self.beta) / np.sin(np.pi-self.alpha-self.beta)
-        # BC = self.rho * np.sin(self.alpha) / np.sin(np.pi-self.alpha-self.beta)
-        # AB = OB - l
-        # BD = BC + d
-        # AD = (AB**2 + BD**2 - 2*AB*BD*np.cos(np.pi-self.alpha-self.beta))**(1/2)
-        # self.alphaStar = np.arcsin(BD*np.sin(np.pi-self.alpha-self.beta) / AD)
+        self.alpha = np.arctan2(self.y_diff, self.x_diff) - self.theta 
+        self.beta = - np.arctan2(self.y_diff, self.x_diff) + theta_goal 
 
         x_o = - self.rho * np.sin(self.beta)
         y_o = - self.rho * np.cos(self.beta)
@@ -232,12 +317,10 @@ class chen():
         AlphaDot.append(self.alphaDot)
         BetaDot.append(self.betaDot)
 
+    # control law
     def SpeedToGo(self):
         self.v =  Kp_rho * (self.rho) * np.cos(self.alpha)
         self.w =  Kp_alpha * np.sin(self.alpha) * np.cos(self.alpha) - Kp_beta * self.beta * ((np.sin(alpha_bar*np.pi/180))**2 - np.sin(self.alphaStar)**2)
-        # self.w =  Kp_alpha * np.sin(self.alpha)
-        if self.alpha > np.pi / 2 or self.alpha < - np.pi / 2:
-            self.v = - self.v
 
     def CurrentPosition(self):
         self.theta = self.theta + self.w * dt # means positive w --> Qolo turn left 
@@ -251,69 +334,62 @@ class chen():
         ax = plt.gca()
         ax.set_aspect(1)
         plt.arrow(x_start, y_start, 0.15*np.cos(theta_start),
-                  0.15*np.sin(theta_start), color='b', width=0.03)
+                  0.15*np.sin(theta_start), color='r', width=0.03)
         plt.arrow(x_goal, y_goal, 0.15*np.cos(theta_goal),
                   0.15*np.sin(theta_goal), color='g', width=0.03)
         plt.scatter(chair_bottom_x, chair_bottom_y, s=50, c='r', marker="x")
-        self.plot_vehicle_blue()
+        self.plot_vehicle()
 
     def collectPlot(self):
-        # plt.figure('AlphaStar-Rho')
-        # plt.plot(Rho, AlphaStar, 'g-')
-        # # plt.xlabel("Rho")
-        # # plt.ylabel("AlphaStar(degree)")
-        # plt.xlim(-0.2, 2.7)
-        # plt.ylim(-60, 60)
-        # # plt.savefig("./Output_curve/V-Rho.png")
+        plt.figure('AlphaStar-Rho')
+        plt.plot(Rho, AlphaStar, 'g-')
+        plt.xlabel("Rho")
+        plt.ylabel("AlphaStar(degree)")
+        plt.xlim(-0.2, 2.7)
+        plt.ylim(-60, 60)
+        # plt.savefig("./Output_curve/V-Rho.png")
 
         # select the initial states whose AlphaStar is within alphaBar
-        
         Abs_AlphaStar = [abs(i) for i in AlphaStar]
-        # print ('max(Abs_AlphaStarAlphaStar) =', max(Abs_AlphaStar))
-
-        k_final = (AlphaStar[-1]- AlphaStar[-2]) / (Rho[-1] - Rho[-2])
-        if AlphaStar[-1] > 0:
-            judge = (k_final >=0 and k_final < 150)
-        elif AlphaStar[-1] < 0:
-            judge = (k_final <=0 and k_final > -150)
-        else:
-            judge = (k_final <150 and k_final > -150)
-        # print (judge)
+        
+        global judge
+        judge = (self.rho < 0.01 and abs(self.alpha-self.beta) < 0.01)
 
         if max(Abs_AlphaStar) < 40 and judge:
-            Left_StartPoint.append([x_start,y_start,theta_start]) 
-
-            # plt.figure('Left_AlphaStar-Rho')
-            # plt.plot(Rho, AlphaStar, 'g-')
-            # # plt.xlabel("Rho")
-            # # plt.ylabel("AlphaStar(degree)")
-            # plt.xlim(-0.2, 2.7)
-            # plt.ylim(-60, 60)
-
-            plt.figure('Separated_trajectory')
+            Left_StartPoint.append([x_start,y_start,theta_start])
+            plt.figure('Left_initialState')
+            # plt.figure('trajectory')
             ax = plt.gca()
             ax.set_aspect(1)
             plt.arrow(x_start, y_start, 0.15*np.cos(theta_start),
-                      0.15*np.sin(theta_start), color='b', width=0.03)
+                      0.15*np.sin(theta_start), color='r', width=0.03)
             plt.arrow(x_goal, y_goal, 0.15*np.cos(theta_goal),
                       0.15*np.sin(theta_goal), color='g', width=0.03)
             plt.scatter(chair_bottom_x, chair_bottom_y, s=50, c='r', marker="x")
             plt.scatter(x_goal, y_goal, s=60, c='k', marker=".", zorder=30) # 
             plt.scatter(x_start, y_start, s=60, c='k', marker=".", zorder=30)
             plt.xlim(-2, 2)
-            plt.ylim(-2.5, 1)  
-            self.plot_vehicle_blue()
+            plt.ylim(-2.5, 1)   
+
+            plt.figure('Left_AlphaStar-Rho')
+            plt.plot(Rho, AlphaStar, 'g-')
+            plt.xlabel("Rho")
+            plt.ylabel("AlphaStar(degree)")
+            plt.xlim(-0.2, 2.7)
+            plt.ylim(-60, 60)
+
+            plt.figure('Left_trajectory')
+            ax = plt.gca()
+            ax.set_aspect(1)
+            plt.arrow(x_start, y_start, 0.15*np.cos(theta_start),
+                      0.15*np.sin(theta_start), color='r', width=0.03)
+            plt.arrow(x_goal, y_goal, 0.15*np.cos(theta_goal),
+                      0.15*np.sin(theta_goal), color='g', width=0.03)
+            plt.scatter(chair_bottom_x, chair_bottom_y, s=50, c='r', marker="x")
+            self.plot_vehicle()
 
         else:
             Delete_StartPoint.append([x_start,y_start,theta_start])
-
-            # plt.figure('Separated_trajectory')
-            # ax = plt.gca()
-            # ax.set_aspect(1)
-            # plt.arrow(x_start, y_start, 0.15*np.cos(theta_start),
-            #           0.15*np.sin(theta_start), color='r', width=0.03)
-            # self.plot_vehicle_red()
-            
 
     def move_to_pose(self, x_start, y_start, theta_start, x_goal, y_goal, theta_goal, L_x_chair, L_y_chair, R_x_chair, R_y_chair, F_x_chair, F_y_chair):
         self.x_center = x_start
@@ -329,8 +405,7 @@ class chen():
 
         count = 0
 
-        while (self.rho > 0 or abs(self.alpha-self.beta) > 0) and count < 4000:
-        # while (self.rho > 0.05) and count < 500:
+        while (self.rho > 0 or abs(self.alpha-self.beta) > 0) and count < 1000:
             count += 1
 
             self.SpeedToGo()
@@ -351,12 +426,12 @@ class chen():
 
         # if count >= 2000:
         #     print("timeout")
-
-
-        self.collectPlot()
+             
+        # self.collectPlot()
         # self.PlotAll()
+        collectPoints()
 
-    def plot_vehicle_blue(self):  # pragma: no cover
+    def plot_vehicle(self):  # pragma: no cover
         # Corners of triangular vehicle when pointing to the right (0 radians)
         p1_i = np.array([0.15, 0, 1]).T
         p2_i = np.array([-0.15, 0.075, 1]).T
@@ -373,27 +448,6 @@ class chen():
 
         # plt.plot(x_camera_traj, y_camera_traj, 'r--')
         plt.plot(x_center_traj, y_center_traj, 'b--')  
-
-        plt.xlim(-2, 2)
-        plt.ylim(-2.5, 1)
-
-    def plot_vehicle_red(self):  # pragma: no cover
-        # Corners of triangular vehicle when pointing to the right (0 radians)
-        p1_i = np.array([0.15, 0, 1]).T
-        p2_i = np.array([-0.15, 0.075, 1]).T
-        p3_i = np.array([-0.15, -0.075, 1]).T
-
-        T = self.transformation_matrix()
-        p1 = np.matmul(T, p1_i)
-        p2 = np.matmul(T, p2_i)
-        p3 = np.matmul(T, p3_i)
-
-        # plt.plot([p1[0], p2[0]], [p1[1], p2[1]], 'k-')
-        # plt.plot([p2[0], p3[0]], [p2[1], p3[1]], 'k-')
-        # plt.plot([p3[0], p1[0]], [p3[1], p1[1]], 'k-')
-
-        # plt.plot(x_camera_traj, y_camera_traj, 'r--')
-        plt.plot(x_center_traj, y_center_traj, 'r--')  
 
         plt.xlim(-2, 2)
         plt.ylim(-2.5, 1)
@@ -430,40 +484,53 @@ class chen():
         self.AngleCenter = 0
 
 
-a = chen()
+a = DockingSim()
 Chair = (0, 0, np.pi/2) # this is the location of attractor
 x_goal, y_goal, theta_goal, L_x_chair, L_y_chair, R_x_chair, R_y_chair, F_x_chair, F_y_chair, chair_bottom_x, chair_bottom_y, chair_back_x, chair_back_y = chair_info(Chair)
 StartPoint = []
-requiredMinAngle = - 40
-requiredMaxAngle = 40
-requireMaxDistance = 2
-requireMinDistance = 1.5
 alpha_bar = 40
 
 Kp_rho = 0.15 # depends on the real Qolo's speed
 Kp_alpha = 0.6 # 15
-# Kp_rho = 0.1 # depends on the real Qolo's speed
-# Kp_alpha = 0.4 # 15
 Kp_beta = round((Kp_rho - Kp_alpha)**2 / (4 * Kp_rho * np.sin(alpha_bar*np.pi/180)**2), 2) # depends on the linearization result
 print(Kp_rho, Kp_alpha, Kp_beta)
 
 # generate all possiable initial states
-for requiredDistance in np.linspace(requireMinDistance, requireMaxDistance+1, 5):
-    for requiredAngle in np.linspace(requiredMinAngle, requiredMaxAngle, 5):
-        startPoint_x = chair_bottom_x + requiredDistance * np.sin(requiredAngle * np.pi/180)
-        startPoint_y = chair_bottom_y - requiredDistance * np.cos(requiredAngle * np.pi/180)
+samRho = 2 # sampling number/step of rho
+samAlpha = 4 # sampling number/step of alpha
+samPhi = 4 # sampling number/step of phi
+Rhoo = []
+Alphaa = []
+Phii = []
+rhoo = np.linspace(0, 2.5, samRho)
+alphaa = np.linspace(-np.pi/2, np.pi/2, samAlpha)
+phii = np.linspace(-np.pi/2, np.pi/2, samPhi)
+[Rhoo,Alphaa,Phii] = np.meshgrid(rhoo,alphaa,phii)
+Rhoo = Rhoo.flatten() # reshape 2D array to 1D array
+Alphaa = Alphaa.flatten()
+Phii = Phii.flatten()
 
-        c_x_diff = chair_bottom_x - startPoint_x
-        c_y_diff = chair_bottom_y - startPoint_y
-        feasiblePostureMin = np.arctan2(c_y_diff, c_x_diff) - (alpha_bar) * np.pi / 180
-        feasiblePostureMax = np.arctan2(c_y_diff, c_x_diff) + (alpha_bar) * np.pi / 180
-        for feasiblePosture in np.linspace(feasiblePostureMin, feasiblePostureMax, 5):
-            startPoint = (startPoint_x, startPoint_y, feasiblePosture)
-            StartPoint.append(startPoint)
-# print ('All_StartPoint =', StartPoint)
+# tranform (rho, alpha, phi) into (x,y,theta)
+for i in range(len(Rhoo)):
+    startPoint_x = - Rhoo[i] * np.sin(Phii[i])
+    startPoint_y = - Rhoo[i] * np.cos(Phii[i])
+    feasiblePosture = np.pi/2 - Alphaa[i] - Phii[i]
+    startPoint = (startPoint_x, startPoint_y, feasiblePosture)
+    StartPoint.append(startPoint)
 
+# lambda function，filter the points we want to observe
+# StartPoint = filter(lambda new_point: (new_point[0]<-0.2 or new_point[0]>0.2 ) and (new_point[1] > 0) and (new_point[2] == np.pi/2), StartPoint) 
+# StartPoint = filter(lambda new_point: (new_point[1] > -1) , StartPoint) 
+# StartPoint = [(-0.3, 0.5, 85* np.pi / 180)]
+
+pointLocation = -1
+five_percent = len(Rhoo)*0.05 #int()
+print('total_points = ', len(Rhoo))
 if __name__ == '__main__':
+    # percentage = 0
     for i in StartPoint:
+        pointLocation += 1
+        
         x_start = i[0]
         y_start = i[1]
         theta_start = i[2]
@@ -481,17 +548,11 @@ if __name__ == '__main__':
         BetaDot = [0]
         V = [0]
         W = [0]
+        if (pointLocation+1)%five_percent == 0:
+            print ('finish', (pointLocation+1)//five_percent*5, 'percentage')
 
-    # Left_rhoAlphaBeta_Output()
-    # Deleted_rhoAlphaBeta_Output()
-
-plt.xticks(fontsize=16) 
-plt.yticks(fontsize=16) 
-plt.xlabel(r'$x$''(meter)', fontsize=16)
-plt.ylabel(r'$y$''(meter)', fontsize=16)
-# plt.xlabel(r'$\rho$''(meter)', fontsize=16)
-# plt.ylabel(r'$\alpha^*$''(degre)', fontsize=16)
-plt.tight_layout()
+    plotPoints()
+    writeIntocsv()
 
 plt.show()
 

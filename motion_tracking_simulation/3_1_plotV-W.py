@@ -2,13 +2,14 @@
 # @Author: Yang Chen
 # @Date:   2019-10-10 22:40:46
 # @Last Modified by:   chenyang
-# @Last Modified time: 2020-01-07 00:42:33
+# @Last Modified time: 2020-05-26 23:30:23
 
-# simulate all possible initial states, for finding the constrains
+# simulate all possible initial states, for finding the constrains, 
 
 import matplotlib.pyplot as plt
 import numpy as np
 from random import random
+import feasible_velocity as fv
 
 x_camera_traj, y_camera_traj = [], []
 x_center_traj, y_center_traj = [], []
@@ -373,6 +374,7 @@ plt.ylabel(r'$w$''(degree/s)', fontsize=16)
 # plt.xlabel(r'$\rho$''(meter)', fontsize=16)
 # plt.ylabel(r'$\alpha^*$''(degre)', fontsize=16)
 plt.tight_layout()
+fv.main()
 
 plt.show()
 

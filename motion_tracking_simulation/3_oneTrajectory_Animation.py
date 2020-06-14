@@ -2,7 +2,7 @@
 # @Author: Yang Chen
 # @Date:   2019-10-10 22:40:46
 # @Last Modified by:   chenyang
-# @Last Modified time: 2020-01-06 04:36:20
+# @Last Modified time: 2020-06-05 00:36:29
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -207,8 +207,10 @@ class chen():
         y_center_traj.append(self.y_center)
 
     def Angle(self):
-        self.alpha = (np.arctan2(self.y_diff, self.x_diff) - self.theta + np.pi) % (2 * np.pi) - np.pi
-        self.beta = (- np.arctan2(self.y_diff, self.x_diff) + theta_goal + np.pi) % (2 * np.pi) - np.pi
+        # self.alpha = (np.arctan2(self.y_diff, self.x_diff) - self.theta + np.pi) % (2 * np.pi) - np.pi
+        # self.beta = (- np.arctan2(self.y_diff, self.x_diff) + theta_goal + np.pi) % (2 * np.pi) - np.pi
+        self.alpha = np.arctan2(self.y_diff, self.x_diff) - self.theta
+        self.beta = - np.arctan2(self.y_diff, self.x_diff) + theta_goal
 
         # OB = self.rho * np.sin(self.beta) / np.sin(np.pi-self.alpha-self.beta)
         # BC = self.rho * np.sin(self.alpha) / np.sin(np.pi-self.alpha-self.beta)
@@ -253,8 +255,38 @@ class chen():
 
     def SpeedToGo(self):
         alphaStarLimit = self.alphaStar
+        # self.v =  Kp_rho * self.rho * np.cos(self.alpha)
+        # # # self.v =  Kp_rho * self.rho * np.sign(-abs(self.alpha) + np.pi / 2)
+        # self.w =  Kp_alpha https://math.stackexchange.com/questions/2710328/what-does-the-symbol-nabla-indicate * self.alpha - Kp_beta * self.beta
+
+        # self.v =  Kp_rho * self.rho * np.cos(self.alpha) #* np.cos(self.alpha + self.beta) 
+        # self.w =  + 3*Kp_rho  * np.sin(self.alpha)*np.cos(self.alpha) - Kp_rho * self.beta + Kp_beta/4 *  np.sin(self.alpha)*np.cos(self.alpha)*np.log((alpha_bar*np.pi/180)**2/((alpha_bar*np.pi/180)**2 - self.alphaStar**2))
+
+        # self.v =  Kp_rho * self.rho * np.cos(self.alpha)# * np.cos(self.alpha + self.beta) 
+        # # self.w =  + 3*Kp_rho  * np.sin(self.alpha)*np.cos(self.alpha) - Kp_rho * self.beta + Kp_beta/4 *  np.sin(self.alpha)*np.cos(self.alpha)*(alpha_bar*np.pi/180)**2/((alpha_bar*np.pi/180)**2 - self.alphaStar**2)
+        # self.w =  Kp_rho  * np.sin(self.alpha)*np.cos(self.alpha) - Kp_rho * self.beta# + Kp_beta *  np.sin(self.alpha)*np.cos(self.alpha)*((np.sin(alpha_bar*np.pi/180))**2 - np.sin(self.alphaStar)**2)
+        # # self.w =  Kp_rho  * np.sin(self.alpha)*np.cos(self.alpha) - Kp_rho * self.beta + Kp_beta*2 *  np.sin(self.alpha)*np.cos(self.alpha)*(self.beta**2)
+
+        # test
+        k1 = Kp_rho
+        k3=k1
+        k2=3*k1
+        k4 = (3*k1 - k2) # / (np.sin(alpha_bar*np.pi/180)**2)
+        # print (k1,k2,k3,k4)
+        # self.v =  k1 * self.rho * np.cos(self.alpha) # * np.cos(self.alpha + self.beta) 
+        # self.w =  k2 * np.sin(self.alpha)*np.cos(self.alpha) - k3 * self.beta + k4 * np.sin(self.alpha)*np.cos(self.alpha)*(1 - np.sin(self.alpha + self.beta)**2)
+
+        # self.v =  k1 * self.rho * np.cos((self.beta - self.alpha)/(50/180) * 0.5)
+        # self.w =  k2 * np.sin(self.alpha)*np.cos(self.alpha) - k3 * self.beta + k4 * np.sin(self.alpha)*np.cos(self.alpha)*((np.sin(alpha_bar*np.pi/180))**2 - np.sin(self.alphaStar)**2)
+
+        # self.v =  Kp_rho * self.rho * np.sign(-abs(self.alpha) + np.pi / 2)
+        # self.w =  Kp_alpha * self.alpha - Kp_beta * self.beta * ((np.sin(alpha_bar*np.pi/180))**2 - np.sin(self.alphaStar)**2)
+
         self.v =  Kp_rho * self.rho * np.cos(self.alpha)
-        self.w =  Kp_alpha * np.sin(self.alpha)*np.cos(self.alpha) - Kp_beta * self.beta * ((np.sin(alpha_bar*np.pi/180))**2 - np.sin(self.alphaStar)**2)
+        self.w =  Kp_rho * np.sin(self.alpha)*np.cos(self.alpha) - Kp_rho * self.beta
+        # self.v =  Kp_rho * self.rho * np.cos(self.alphaStar - self.alpha)
+        # self.w =  Kp_alpha * self.alpha - Kp_beta * self.beta * ((np.sin(alpha_bar*np.pi/180))**2 - np.sin(self.alphaStar)**2)
+
         # self.v =  Kp_rho * self.rho * np.cos(self.alphaStar - alpha_bar*np.pi/180 + np.pi/2) * np.cos(self.alpha)
         # self.w =  Kp_alpha * self.alpha + Kp_beta * self.beta * ((np.sin(alpha_bar*np.pi/180))**2 - np.sin(self.alphaStar)**2)
         # self.v =  Kp_rho * self.rho * np.cos(self.alpha) * np.cos(self.alphaStar - alpha_bar*np.pi/180 + np.pi/2)
@@ -263,12 +295,13 @@ class chen():
         # if self.alpha > np.pi / 2 or self.alpha < -np.pi / 2 or alphaStarLimit > alpha_bar*np.pi/180 or alphaStarLimit < - alpha_bar*np.pi/180 :
         #     self.v = - self.v
         #     print('reversed')
-        if self.alpha > np.pi / 2 or self.alpha < - np.pi / 2:
-            self.v = - self.v
+        # if self.alpha > np.pi / 2 or self.alpha < - np.pi / 2:
+        #     self.v = - self.v
         print('v =', self.v, 'w =', self.w )
 
     def CurrentPosition(self):
         self.theta = self.theta + self.w * dt
+        # print ('2theta=', 2*self.theta)
         self.x_center = self.x_center + self.v * np.cos(self.theta) * dt
         self.y_center = self.y_center + self.v * np.sin(self.theta) * dt
         self.x_camera = self.x_center + self.deviation * np.cos(self.theta)
@@ -325,7 +358,7 @@ class chen():
 
         count = 0
 
-        while (self.rho > 0 or abs(self.alpha-self.beta) > 0) and count < 500:
+        while (self.rho > 0 or abs(self.alpha-self.beta) > 0) and count < 1000:
         # while (self.rho > 0.05) and count < 500:
             count += 1
             # print("count =", count)
@@ -354,7 +387,7 @@ class chen():
 
             # self.PlotAll()
 
-        if count >= 500:
+        if count >= 1000:
             print("timeout")
 
         print('final rho =', self.rho)
@@ -387,7 +420,7 @@ class chen():
         # plt.axis("equal")
         # plt.xlim(-1, 1)
         # plt.ylim(-0.6, 0.8)
-        plt.xlim(-2, 2)
+        plt.xlim(-3, 3)
         plt.ylim(-2.5, 1)       
         plt.xticks(fontsize=16) 
         plt.yticks(fontsize=16) 
@@ -395,6 +428,7 @@ class chen():
         plt.ylabel(r'$y$''(meter)', fontsize=16)
         # plt.xlabel(r'$\rho$''(meter)', fontsize=16)
         # plt.ylabel(r'$\alpha^*$''(degre)', fontsize=16)
+        
         plt.tight_layout()
         plt.pause(dt)
 
@@ -442,7 +476,7 @@ alpha_bar = 40
 Kp_rho = 0.15 # depends on the real Qolo's speed
 Kp_alpha = 0.6 # 15
 Kp_beta = round((Kp_rho - Kp_alpha)**2 / (4 * Kp_rho * np.sin(alpha_bar*np.pi/180)**2), 2) # depends on the linearization result
-# Kp_beta = -1.59 # 1.29
+Kp_beta = 0.39 # 1.29
 print(Kp_rho, Kp_alpha, Kp_beta)
 
 
@@ -454,7 +488,7 @@ c_x_diff = chair_bottom_x - startPoint_x
 c_y_diff = chair_bottom_y - startPoint_y
 feasiblePosture = np.arctan2(c_y_diff, c_x_diff) - (40) * np.pi / 180
 StartPoint = [(startPoint_x, startPoint_y, feasiblePosture)]
-StartPoint = [(0.5, -2.3, 45* np.pi / 180)]
+StartPoint = [(-0.3, 0, 85* np.pi / 180)]
 print(StartPoint)
 
 if __name__ == '__main__':
@@ -481,6 +515,5 @@ if __name__ == '__main__':
 
 
 plt.show()
-
 
 
