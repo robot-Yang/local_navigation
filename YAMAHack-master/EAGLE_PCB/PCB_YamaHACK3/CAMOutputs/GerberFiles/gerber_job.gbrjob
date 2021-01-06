@@ -1,0 +1,24 @@
+{
+    "Header": {
+        "Comment": "All values are metric (mm)",
+        "CreationDate": "2019-09-28T14:04:05Z",
+        "GenerationSoftware": {
+            "Application": "EAGLE",
+            "Vendor": "Autodesk",
+            "Version": "9.2.2"
+        },
+        "Part": "Single"
+    },
+    "Overall": {
+        "BoardThickness": 1.57,
+        "LayerNumber": 2,
+        "Name": {
+            "ProjectId": "yamaHACK"
+        },
+        "Owner": "Bruno Leme <leme.bcc@gmail.com>",
+        "Size": {
+            "X": 62.197,
+            "Y": 73.122
+        }
+    }
+}

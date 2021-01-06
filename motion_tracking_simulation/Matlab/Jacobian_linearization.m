@@ -195,25 +195,37 @@
 clear
 syms x_o y_o theta_o x_d y_d theta_d x_a y_a theta_a y_diff_da x_diff_da rho alpha alphaStar beta v w rhoDot alphaDot betaDot k1 k2 k3 k4 alphabar l d;
 
-x_o = - rho * sin(beta);
-y_o = - rho * cos(beta);
-theta_o = pi/2 - (alpha + beta);
+% x_o = - rho * sin(beta);
+% y_o = - rho * cos(beta);
+% theta_o = pi/2 - (alpha + beta);
+% x_d = 0;
+% y_d = d;
+% theta_d = pi/2;
+% x_a = x_o + l * cos(theta_o);
+% y_a = y_o + l * sin(theta_o);
+% theta_a = theta_o;
+% y_diff_da = y_d - y_a;
+% x_diff_da = x_d - x_a;
+% alphaStar = atan2(y_diff_da, x_diff_da) - theta_a
+
+x_o = 0;
+y_o = 0;
 x_d = 0;
-y_d = d;
-theta_d = pi/2;
-x_a = x_o + l * cos(theta_o);
-y_a = y_o + l * sin(theta_o);
-theta_a = theta_o;
+y_d = rho * cos(alpha+pi) + d * cos(alpha + beta +pi);
+x_a = rho * sin(alpha+pi) + d * sin(alpha + beta +pi);
+y_a = l;
+theta_a = pi/2;
 y_diff_da = y_d - y_a;
 x_diff_da = x_d - x_a;
 alphaStar = atan2(y_diff_da, x_diff_da) - theta_a
 
-% v = k1*(rho)*cos(alpha);
-% w = k2*sin(alpha)*cos(alpha) + k3*beta*(sind(alphabar)^2 - sin(alphaStar)^2);
+
+v = k1*(rho)*cos(alpha);
+w = k2*sin(alpha)*cos(alpha) + k3*beta*(sind(alphabar)^2 - sin(alphaStar)^2);
 % v = k1*(rho)*cos(alpha);
 % w = k2*sin(alpha)*cos(alpha) - k3*beta;
-v = k1*(rho)*cos(alpha);
-w = k2*sin(alpha)*cos(alpha) - k3*beta + k4*sin(alpha)*cos(alpha)*(1 - sin(alpha+beta)^2);
+% v = k1*(rho)*cos(alpha);
+% w = k2*sin(alpha)*cos(alpha) - k3*beta + k4*sin(alpha)*cos(alpha)*(1 - sin(alpha+beta)^2);
 
 rhoDot = -v*cos(alpha);
 alphaDot = v/rho*sin(alpha) - w;

@@ -2,7 +2,7 @@
 # @Author: Yang Chen
 # @Date:   2019-10-25 14:49:16
 # @Last Modified by:   chenyang
-# @Last Modified time: 2020-06-14 22:18:25
+# @Last Modified time: 2020-12-27 00:05:49
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,7 +10,7 @@ import numpy as np
 DISTANCE = 0.62
 
 def outer_space():
-	maimum = 1.4
+	maimum = 0.3
 	v_l_min = - maimum
 	v_l_max = maimum
 	v_r_min = - maimum
@@ -36,13 +36,13 @@ def outer_space():
 	plt.plot(v1, w1, color ='k')
 	plt.plot(v2, w2, color ='k')
 	plt.plot(v3, w3, color ='k')
-	plt.plot([0,0],[0,1], color ='gray', linewidth=1.5, linestyle="--")
+	# plt.plot([0,0],[0,1], color ='gray', linewidth=1.5, linestyle="--")
 	# plt.plot([chair_bottom_x, i[0]],[chair_bottom_y,i[1]], color ='gray', linewidth=1.5, linestyle="--")
 	plt.xlabel("V")
 	plt.ylabel("W")
 
 def inner_space():
-	minimum = 0.02
+	minimum = 0.03
 	v_l_min = - minimum
 	v_l_max = minimum
 	v_r_min = - minimum
@@ -68,16 +68,16 @@ def inner_space():
 	plt.plot(v1, w1, color ='k')
 	plt.plot(v2, w2, color ='k')
 	plt.plot(v3, w3, color ='k')
-	plt.plot([0,0],[0,1], color ='gray', linewidth=1.5, linestyle="--")
+	# plt.plot([0,0],[0,1], color ='gray', linewidth=1.5, linestyle="--")
 	# plt.plot([chair_bottom_x, i[0]],[chair_bottom_y,i[1]], color ='gray', linewidth=1.5, linestyle="--")
-	plt.xlabel("V")
-	plt.ylabel("W")
+	plt.xlabel(r'$V$''[m/s]', fontsize=16)
+	plt.ylabel(r'$W$''[degree/s]', fontsize=16)
 
 def main():
-	outer_space()
+	# outer_space()
 	inner_space()
-	plt.plot([0,0],[-7.5,7.5], color ='gray', linewidth=1.5, linestyle="--")
-	plt.plot([-1.5,1.5],[0,0], color ='gray', linewidth=1.5, linestyle="--")
+	# plt.plot([0,0],[-7.5,7.5], color ='gray', linewidth=1.5, linestyle="--")
+	# plt.plot([-1.5,1.5],[0,0], color ='gray', linewidth=1.5, linestyle="--")
 
-main()
-plt.show()
+# main()
+# plt.show()

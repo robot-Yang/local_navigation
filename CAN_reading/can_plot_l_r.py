@@ -65,7 +65,7 @@ def RegEx():
     # control_law 
     # myFile = './Raspberry_code/control_law/4trail.txt' 
 
-    myFile = './bothwheel-300to3000-threshold-0.5-200.txt' 
+    myFile = './shunshizhen.txt' 
 
     # ANALOG+0.0203
     # myFile = './Raspberry_code/ANALOG+0.02/1-0_2509-2509.txt' v

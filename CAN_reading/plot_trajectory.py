@@ -27,7 +27,7 @@ Left_time = []
 # find lines which including needed value
 def RegEx():
     # myFile = './nishizhen.txt'
-    myFile = './Raspberry_code/control_law/3trail.txt'
+    myFile = './shunshizhen.txt'
     openFile = open(myFile, 'r')
 #     myResList0 = []
 #     myResList1 = []

@@ -2,9 +2,12 @@
 # @Author: Yang Chen
 # @Date:   2019-10-10 22:40:46
 # @Last Modified by:   chenyang
-# @Last Modified time: 2020-06-12 08:00:10
+# @Last Modified time: 2020-12-25 23:37:55
 
-# visualize all initial states in 2D/3D space
+'''
+visualize all initial states in 2D/3D space
+'''
+
 import sys
 sys.path.append('/usr/local/lib/python3.7/site-packages')
 
@@ -17,7 +20,6 @@ import sympy as sp
 
 chair_width = 0.5
 chair_length = 0.5
-safe_distance = 0.45 # distanc between attractor and chair's front edge
 
 Chair = (0, 0, np.pi/2) # this is the location of attractor
 StartPoint = []
@@ -25,21 +27,48 @@ alpha_bar = 40
 
 
 k4 = 2
-samRho = 20 # sampling number/step of rho
-samPhi = 20 # sampling number/step of phi
-samAlpha = 10 # sampling number/step of alpha
+k5 = 0.5
+samRho = 10 # sampling number/step of rho
+samPhi = 5 # sampling number/step of phi
+samAlpha = 5 # sampling number/step of alpha
 
 Rhoo = []
 Alphaa = []
 Phii = []
 StartPoint = []
 
+def chair_info(chair):
+    x_goal = chair[0] # attractor
+    y_goal = chair[1]
+    theta_goal = chair[2]
+    chair_bottom_x = x_goal + d * np.cos(theta_goal) # objective
+    chair_bottom_y = y_goal + d * np.sin(theta_goal)
+    F_x_chair = chair_bottom_x - chair_length/2 * np.cos(theta_goal)
+    F_y_chair = chair_bottom_y - chair_length/2 * np.sin(theta_goal)
+    F_L_x_chair = F_x_chair + chair_width / 2 * np.cos(theta_goal + np.pi/2)
+    F_L_y_chair = F_y_chair + chair_width / 2 * np.sin(theta_goal + np.pi/2)
+    F_R_x_chair = F_x_chair + chair_width / 2 * np.cos(theta_goal - np.pi/2)
+    F_R_y_chair = F_y_chair + chair_width / 2 * np.sin(theta_goal - np.pi/2)
+    B_x_chair = chair_bottom_x + chair_length/2 * np.cos(theta_goal)
+    B_y_chair = chair_bottom_y + chair_length/2 * np.sin(theta_goal)
+    B_L_x_chair = B_x_chair + chair_width / 2 * np.cos(theta_goal + np.pi/2)
+    B_L_y_chair = B_y_chair + chair_width / 2 * np.sin(theta_goal + np.pi/2)
+    B_R_x_chair = B_x_chair + chair_width / 2 * np.cos(theta_goal - np.pi/2)
+    B_R_y_chair = B_y_chair + chair_width / 2 * np.sin(theta_goal - np.pi/2)
+    chair_back_x = F_x_chair + chair_length * np.cos(theta_goal)
+    chair_back_y = F_y_chair + chair_length  * np.sin(theta_goal)
+    plt.plot([F_L_x_chair, F_R_x_chair], [F_L_y_chair, F_R_y_chair], 'k-')
+    plt.plot([B_L_x_chair, B_R_x_chair], [B_L_y_chair, B_R_y_chair], 'k-')
+    plt.plot([F_L_x_chair, B_L_x_chair], [F_L_y_chair, B_L_y_chair], 'k-')
+    plt.plot([F_R_x_chair, B_R_x_chair], [F_R_y_chair, B_R_y_chair], 'k-')
+    return F_L_x_chair, F_L_y_chair, F_R_x_chair, F_R_y_chair, B_L_x_chair, B_L_y_chair, B_R_x_chair, B_R_y_chair
+
 # load initial state points from store csv file, which satisfy no violence of FOV and convergence.
 def load_initializePoint(Rhooo,Alphaaa,Phiii):
     global Rhoo
     global Alphaa
     global Phii
-    with open('simulation_result_1.csv', encoding = 'gbk', errors='ignore') as f:
+    with open('simulation_result_ex.csv', encoding = 'gbk', errors='ignore') as f:
         f_csv = csv.reader(f)
         f_csv = list(f_csv)
         Rhoo = f_csv[Rhooo]
@@ -54,9 +83,10 @@ def load_initializePoint(Rhooo,Alphaaa,Phiii):
 # initialize points by a defined inequalities.
 def initializePoint():
     for rho in np.linspace(0, 1.5, samRho):
-        phi_max = rho**2 / k4**2
+        phi_max = rho**2 / k4**3
         for phi in np.linspace(-phi_max, phi_max, samPhi):
-            alpha_max = (1- abs(phi) / phi_max) * (alpha_bar*np.pi/180)
+            alpha_max = (1- abs(phi) / phi_max) * (alpha_bar*np.pi/180) * k5 * rho
+            # alpha_max = (1- abs(phi) / (rho**3 / k4**2)) * (alpha_bar*np.pi/180)
             Alpha = np.linspace(-alpha_max, alpha_max, samAlpha)
             Alpha = Alpha.tolist()
 
@@ -85,14 +115,15 @@ def TwoDspace(x_start,y_start,theta_start,color):
     plt.figure('2D space')
     ax = plt.gca()
     ax.set_aspect(1)
+    chair_info(Chair)
     plt.scatter(chair_center_x, chair_center_y, s=60, c='r', marker="x")
     plt.arrow(x_goal, y_goal, 0.05*np.cos(theta_goal),
-              0.05*np.sin(theta_goal), color='g', width=0.015)
+              0.05*np.sin(theta_goal), color='g', width=0.020)
     plt.scatter(x_goal, y_goal, s=60, c='k', marker=".", zorder=30) 
     if color == 'black':
-        plt.quiver(x_start, y_start, np.cos(theta_start), np.sin(theta_start), color = 'k', scale =50)
+        plt.quiver(x_start, y_start, np.cos(theta_start), np.sin(theta_start), color = 'k', scale =35, width=0.003)
     else:
-        plt.quiver(x_start, y_start, np.cos(theta_start), np.sin(theta_start), color = 'r', scale =50)
+        plt.quiver(x_start, y_start, np.cos(theta_start), np.sin(theta_start), color = 'r', scale =35)
     # plt.scatter(x_start, y_start, s=60, c='k', marker=".", zorder=30)
     plt.xlim(-2, 2)
     plt.ylim(-2.5, 1)
@@ -135,8 +166,6 @@ def plot_initializePoint(color):
 
 def calculateVDot():
     k1,k2,k3 = 0.15, 0.6, 0.82
-    l = 0.1
-    d = 0.7
     alphaBar = 40
     # rho, alpha, phi = sp.symbols("rho alpha phi")
     # # rho = sp.MatrixSymbol('rho', len(Rhoo),0)
@@ -183,8 +212,10 @@ def calculateVDot():
     max_VDot = max(V_Dot)
     print ('max_VDot =', max_VDot)
 
+l = 0.26
+d = 0.9
 x_goal, y_goal, theta_goal = 0,0,np.pi/2
-chair_center_x, chair_center_y = 0,0.7 
+chair_center_x, chair_center_y = 0, d
 
 if __name__ == '__main__':
     fig = plt.figure('3D space')

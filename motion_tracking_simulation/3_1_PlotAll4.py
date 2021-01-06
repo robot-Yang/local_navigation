@@ -2,7 +2,7 @@
 # @Author: Yang Chen
 # @Date:   2019-10-10 22:40:46
 # @Last Modified by:   chenyang
-# @Last Modified time: 2020-06-14 22:10:48
+# @Last Modified time: 2020-11-30 16:12:27
 
 '''
 Simulate all possible initial states, give constraint of a* and convergence, find the feasible space, save data into csv
@@ -201,19 +201,27 @@ def collectPoints():
     Abs_AlphaStar = [abs(i) for i in AlphaStar]
     global judge
     judge = (a.rho < 0.01 and abs(a.alpha-a.beta) < 0.01)
+    # k_final = (AlphaStar[-1]- AlphaStar[-2]) / (Rho[-1] - Rho[-2])
+    # if AlphaStar[-1] > 0:
+    #     judge = (k_final >=0 and k_final < 150)
+    # elif AlphaStar[-1] < 0:
+    #     judge = (k_final <=0 and k_final > -150)
+    # else:
+    #     judge = (k_final <150 and k_final > -150)
+
     if max(Abs_AlphaStar) < 40 and judge:
-        # Left_initialX.append(x_start)
-        # Left_initialY.append(y_start)
-        # Left_initialPosture.append(theta_start)
+        Left_initialX.append(x_start)
+        Left_initialY.append(y_start)
+        Left_initialPosture.append(theta_start)
         Left_initialRho.append(Rhoo[pointLocation])
         Left_initialAlpha.append(Alphaa[pointLocation])
         Left_initialPhi.append(Phii[pointLocation])
         Left_maxAlphaStar.append(max(Abs_AlphaStar))
         Left_Stable_flag.append(1)
     else:
-        # Delete_initialX.append(x_start)
-        # Delete_initialY.append(y_start)
-        # Delete_initialPosture.append(theta_start)
+        Delete_initialX.append(x_start)
+        Delete_initialY.append(y_start)
+        Delete_initialPosture.append(theta_start)
         Delete_initialRho.append(Rhoo[pointLocation])
         Delete_initialAlpha.append(Alphaa[pointLocation])
         Delete_initialPhi.append(Phii[pointLocation])
@@ -223,14 +231,14 @@ def collectPoints():
 def writeIntocsv():
     # saved format: [rho alpha phi alpha* Stable_flag]
     Left_all = [Left_initialRho,Left_initialAlpha,Left_initialPhi,Left_maxAlphaStar,Left_Stable_flag]
-    Left_all = np.transpose(Left_all)
+    Left_all = np.transpose(Left_all) 
     # np.savetxt("simulation_result.csv", Left_all, delimiter=",")
     Delete_all = [Delete_initialRho, Delete_initialAlpha, Delete_initialPhi, Delete_maxAlphaStar, Delete_Stable_flag]
     Delete_all = np.transpose(Delete_all)
-    np.savetxt("simulation_result_0.csv", np.r_[Left_all,Delete_all], delimiter=",")
+    np.savetxt("simulation_result_02.csv", np.r_[Left_all,Delete_all], delimiter=",")
 
     # saved format: 
-    with open('simulation_result_1.csv', 'w') as csvFile:
+    with open('simulation_result_12.csv', 'w') as csvFile:
         writer = csv.writer(csvFile)
         writer.writerow(Left_initialRho)
         writer.writerow(Left_initialAlpha)
@@ -352,8 +360,15 @@ class DockingSim():
         # select the initial states whose AlphaStar is within alphaBar
         Abs_AlphaStar = [abs(i) for i in AlphaStar]
         
-        global judge
-        judge = (self.rho < 0.01 and abs(self.alpha-self.beta) < 0.01)
+        # global judge
+        # judge = (self.rho < 0.01 and abs(self.alpha-self.beta) < 0.01)
+        k_final = (AlphaStar[-1]- AlphaStar[-2]) / (Rho[-1] - Rho[-2])
+        if AlphaStar[-1] > 0:
+            judge = (k_final >=0 and k_final < 150)
+        elif AlphaStar[-1] < 0:
+            judge = (k_final <=0 and k_final > -150)
+        else:
+            judge = (k_final <150 and k_final > -150)
 
         if max(Abs_AlphaStar) < 40 and judge:
             Left_StartPoint.append([x_start,y_start,theta_start])
@@ -496,9 +511,9 @@ Kp_beta = round((Kp_rho - Kp_alpha)**2 / (4 * Kp_rho * np.sin(alpha_bar*np.pi/18
 print(Kp_rho, Kp_alpha, Kp_beta)
 
 # generate all possiable initial states
-samRho = 2 # sampling number/step of rho
-samAlpha = 4 # sampling number/step of alpha
-samPhi = 4 # sampling number/step of phi
+samRho = 10 # sampling number/step of rho
+samAlpha = 10 # sampling number/step of alpha
+samPhi = 10 # sampling number/step of phi
 Rhoo = []
 Alphaa = []
 Phii = []
